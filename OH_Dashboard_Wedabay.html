@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Occupational Health Dashboard – Wedabay Medical Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg-main: #f0f4f8;
+  --bg-card: #ffffff;
+  --bg-glass: rgba(255,255,255,0.82);
+  --bg-sidebar: #1a2744;
+  --bg-sidebar-item: rgba(255,255,255,0.07);
+  --accent-1: #2e7dba;
+  --accent-2: #38b89a;
+  --accent-3: #e87a41;
+  --accent-4: #8b6dd6;
+  --accent-5: #e84141;
+  --text-primary: #1a2744;
+  --text-secondary: #5c6f88;
+  --text-muted: #9aabbd;
+  --text-white: #ffffff;
+  --border: rgba(44,100,176,0.13);
+  --shadow-sm: 0 2px 12px rgba(30,60,120,0.07);
+  --shadow-md: 0 8px 32px rgba(30,60,120,0.13);
+  --shadow-lg: 0 20px 60px rgba(30,60,120,0.18);
+  --radius: 18px;
+  --radius-sm: 10px;
+  --transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===================== SIDEBAR ===================== */
+#sidebar {
+  position: fixed; top: 0; left: 0;
+  width: 260px; height: 100vh;
+  background: linear-gradient(170deg, #1a2744 0%, #162239 60%, #1e3a5f 100%);
+  z-index: 100;
+  display: flex; flex-direction: column;
+  box-shadow: 4px 0 32px rgba(26,39,68,0.22);
+  transition: var(--transition);
+  overflow: hidden;
+}
+#sidebar::before {
+  content:''; position:absolute; top:-80px; right:-60px;
+  width:220px; height:220px; border-radius:50%;
+  background: radial-gradient(circle, rgba(46,125,186,0.25) 0%, transparent 70%);
+  pointer-events:none;
+}
+#sidebar::after {
+  content:''; position:absolute; bottom:20px; left:-40px;
+  width:180px; height:180px; border-radius:50%;
+  background: radial-gradient(circle, rgba(56,184,154,0.14) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: relative; z-index:1;
+}
+.logo-badge {
+  display: inline-flex; align-items: center; gap: 12px;
+  width: 100%;
+}
+.logo-icon {
+  width: 46px; height: 46px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(46,125,186,0.4);
+  animation: pulse-logo 3s ease-in-out infinite;
+}
+@keyframes pulse-logo {
+  0%,100% { box-shadow: 0 4px 16px rgba(46,125,186,0.4); }
+  50% { box-shadow: 0 4px 28px rgba(56,184,154,0.6); }
+}
+.logo-text { color: #fff; }
+.logo-title { font-family:'Outfit',sans-serif; font-size:13.5px; font-weight:700; letter-spacing:0.3px; line-height:1.2; }
+.logo-sub { font-size:10.5px; color: rgba(255,255,255,0.52); font-weight:400; margin-top:2px; }
+
+.sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; position:relative; z-index:1; }
+.nav-section-label {
+  font-size:10px; letter-spacing:1.5px; color:rgba(255,255,255,0.3);
+  text-transform:uppercase; padding:12px 12px 6px; font-weight:600;
+}
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding:11px 14px; border-radius:12px; cursor:pointer;
+  color:rgba(255,255,255,0.62); font-size:13.5px; font-weight:500;
+  transition:var(--transition); margin-bottom:3px; position:relative;
+  user-select:none;
+}
+.nav-item:hover { background:rgba(255,255,255,0.1); color:#fff; }
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(46,125,186,0.35), rgba(56,184,154,0.15));
+  color:#fff;
+  box-shadow: inset 3px 0 0 var(--accent-1);
+}
+.nav-item .nav-icon { font-size:18px; width:22px; text-align:center; flex-shrink:0; }
+.nav-badge {
+  margin-left:auto; background:var(--accent-3);
+  color:#fff; font-size:10px; font-weight:700;
+  padding:2px 7px; border-radius:20px;
+}
+
+.sidebar-footer {
+  padding:16px 20px 24px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  position:relative; z-index:1;
+}
+.user-card {
+  display:flex; align-items:center; gap:12px;
+}
+.user-avatar {
+  width:38px; height:38px; border-radius:50%;
+  background: linear-gradient(135deg,#e87a41,#8b6dd6);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:700; font-size:14px; flex-shrink:0;
+}
+.user-info .user-name { color:#fff; font-size:13px; font-weight:600; }
+.user-info .user-role { color:rgba(255,255,255,0.42); font-size:11px; }
+
+/* ===================== MAIN CONTENT ===================== */
+#main {
+  margin-left: 260px;
+  min-height: 100vh;
+  transition: var(--transition);
+}
+
+.topbar {
+  position:sticky; top:0; z-index:90;
+  background: rgba(240,244,248,0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.topbar-left { display:flex; align-items:center; gap:16px; }
+.page-title { font-family:'Outfit',sans-serif; font-size:20px; font-weight:700; color:var(--text-primary); }
+.page-sub { font-size:13px; color:var(--text-secondary); margin-top:1px; }
+
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.topbar-btn {
+  padding:8px 18px; border-radius:10px; border:none; cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:600;
+  transition:var(--transition);
+}
+.btn-primary {
+  background: linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  color:#fff; box-shadow: 0 4px 16px rgba(46,125,186,0.3);
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow: 0 8px 24px rgba(46,125,186,0.4); }
+.btn-outline {
+  background:transparent; border:1.5px solid var(--border);
+  color:var(--text-secondary);
+}
+.btn-outline:hover { background:var(--bg-card); color:var(--text-primary); }
+
+.date-pill {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:10px; padding:7px 14px;
+  font-size:12.5px; color:var(--text-secondary); font-weight:500;
+  box-shadow:var(--shadow-sm);
+}
+
+.notif-btn {
+  width:38px; height:38px; border-radius:10px;
+  background:var(--bg-card); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; position:relative; transition:var(--transition);
+  box-shadow:var(--shadow-sm);
+}
+.notif-btn:hover { background:var(--accent-1); color:#fff; }
+.notif-dot {
+  position:absolute; top:6px; right:6px;
+  width:8px; height:8px; background:var(--accent-5);
+  border-radius:50%; border:2px solid var(--bg-main);
+}
+
+/* ===================== SECTIONS ===================== */
+.section-page { display:none; padding:28px 32px 40px; animation: fadeSlideIn 0.4s ease; }
+.section-page.active { display:block; }
+@keyframes fadeSlideIn {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.section-header { margin-bottom:24px; }
+.section-header h2 { font-family:'Outfit',sans-serif; font-size:22px; font-weight:700; }
+.section-header p { font-size:13px; color:var(--text-secondary); margin-top:4px; }
+
+/* ===================== CARDS ===================== */
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; margin-bottom:28px; }
+
+.stat-card {
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  padding:22px 22px 20px;
+  box-shadow:var(--shadow-sm);
+  border:1px solid var(--border);
+  transition:var(--transition);
+  position:relative; overflow:hidden;
+  cursor:default;
+}
+.stat-card::before {
+  content:''; position:absolute;
+  top:-30px; right:-30px; width:100px; height:100px; border-radius:50%;
+  opacity:0.08; transition:var(--transition);
+}
+.stat-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); }
+.stat-card:hover::before { transform:scale(1.4); opacity:0.14; }
+
+.stat-card.c1::before { background:var(--accent-1); }
+.stat-card.c2::before { background:var(--accent-2); }
+.stat-card.c3::before { background:var(--accent-3); }
+.stat-card.c4::before { background:var(--accent-4); }
+.stat-card.c5::before { background:var(--accent-5); }
+
+.stat-icon {
+  width:44px; height:44px; border-radius:13px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; margin-bottom:14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+.c1 .stat-icon { background:linear-gradient(135deg,#dbeafe,#bfdbfe); }
+.c2 .stat-icon { background:linear-gradient(135deg,#d1fae5,#a7f3d0); }
+.c3 .stat-icon { background:linear-gradient(135deg,#fff3e0,#ffe0b2); }
+.c4 .stat-icon { background:linear-gradient(135deg,#ede9fe,#ddd6fe); }
+.c5 .stat-icon { background:linear-gradient(135deg,#fee2e2,#fecaca); }
+
+.stat-label { font-size:12px; color:var(--text-secondary); font-weight:500; margin-bottom:6px; }
+.stat-value { font-family:'Outfit',sans-serif; font-size:32px; font-weight:800; line-height:1; }
+.c1 .stat-value { color:var(--accent-1); }
+.c2 .stat-value { color:var(--accent-2); }
+.c3 .stat-value { color:var(--accent-3); }
+.c4 .stat-value { color:var(--accent-4); }
+.c5 .stat-value { color:var(--accent-5); }
+
+.stat-sub { font-size:11.5px; color:var(--text-muted); margin-top:6px; }
+.stat-trend { display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:600; margin-top:6px; }
+.trend-up { color:#22c55e; }
+.trend-down { color:#ef4444; }
+
+/* ===================== CHART CARD ===================== */
+.chart-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(400px,1fr)); gap:20px; margin-bottom:28px; }
+.chart-card {
+  background:var(--bg-card); border-radius:var(--radius);
+  padding:24px; box-shadow:var(--shadow-sm);
+  border:1px solid var(--border); transition:var(--transition);
+}
+.chart-card:hover { box-shadow:var(--shadow-md); }
+.chart-card.full { grid-column:1/-1; }
+.chart-title { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; margin-bottom:4px; }
+.chart-sub { font-size:12px; color:var(--text-secondary); margin-bottom:18px; }
+canvas { max-height:280px; }
+
+/* ===================== TABLE ===================== */
+.table-card {
+  background:var(--bg-card); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); border:1px solid var(--border);
+  overflow:hidden; margin-bottom:20px;
+}
+.table-header {
+  padding:18px 24px; display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.table-header h3 { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; }
+.table-actions { display:flex; gap:8px; }
+.tbl-btn {
+  padding:6px 14px; border-radius:8px; border:1.5px solid var(--border);
+  background:transparent; cursor:pointer; font-size:12px; font-weight:600;
+  color:var(--text-secondary); transition:var(--transition);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.tbl-btn:hover { background:var(--accent-1); color:#fff; border-color:var(--accent-1); }
+.tbl-btn.active-btn { background:var(--accent-1); color:#fff; border-color:var(--accent-1); }
+
+table { width:100%; border-collapse:collapse; }
+th {
+  background:#f8fafc; text-align:left;
+  padding:11px 16px; font-size:11.5px; font-weight:700;
+  color:var(--text-secondary); letter-spacing:0.5px; text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+}
+td {
+  padding:11px 16px; font-size:13px; color:var(--text-primary);
+  border-bottom:1px solid rgba(0,0,0,0.04); vertical-align:middle;
+}
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:#f8fafc; }
+.badge {
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:700;
+}
+.badge-green { background:#dcfce7; color:#166534; }
+.badge-red { background:#fee2e2; color:#991b1b; }
+.badge-yellow { background:#fef9c3; color:#854d0e; }
+.badge-blue { background:#dbeafe; color:#1e40af; }
+.badge-purple { background:#ede9fe; color:#6b21a8; }
+.badge-gray { background:#f1f5f9; color:#475569; }
+.badge-orange { background:#ffedd5; color:#9a3412; }
+
+/* ===================== CALENDAR ===================== */
+.calendar-wrap {
+  display:grid; grid-template-columns:1fr 340px; gap:20px;
+}
+.cal-card {
+  background:var(--bg-card); border-radius:var(--radius);
+  padding:24px; box-shadow:var(--shadow-sm); border:1px solid var(--border);
+}
+.cal-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;
+}
+.cal-header h3 { font-family:'Outfit',sans-serif; font-size:17px; font-weight:700; }
+.cal-nav { display:flex; gap:8px; align-items:center; }
+.cal-nav-btn {
+  width:32px; height:32px; border-radius:8px; border:1px solid var(--border);
+  background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:var(--transition); font-size:14px;
+}
+.cal-nav-btn:hover { background:var(--accent-1); color:#fff; border-color:var(--accent-1); }
+.cal-month-label { font-size:14px; font-weight:700; color:var(--text-primary); min-width:140px; text-align:center; }
+
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-dow {
+  text-align:center; font-size:11px; font-weight:700;
+  color:var(--text-muted); padding:6px 0; text-transform:uppercase;
+}
+.cal-day {
+  aspect-ratio:1; border-radius:10px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; cursor:pointer;
+  transition:var(--transition); position:relative; font-size:13.5px;
+  font-weight:500; color:var(--text-primary);
+}
+.cal-day:hover { background:#eff6ff; }
+.cal-day.today {
+  background: linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  color:#fff; font-weight:700;
+  box-shadow:0 4px 14px rgba(46,125,186,0.4);
+}
+.cal-day.has-event::after {
+  content:''; position:absolute; bottom:4px;
+  width:5px; height:5px; border-radius:50%;
+  background:var(--accent-3);
+}
+.cal-day.today.has-event::after { background:#fff; }
+.cal-day.reminder1 { background:#fff3e0; color:#e87a41; font-weight:700; }
+.cal-day.reminder2 { background:#fff9c4; color:#b45309; font-weight:700; }
+.cal-day.other-month { color:var(--text-muted); }
+
+.events-list { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.event-item {
+  display:flex; gap:12px; align-items:flex-start;
+  padding:12px 14px; border-radius:12px;
+  background:#f8fafc; border:1px solid var(--border);
+  transition:var(--transition);
+}
+.event-item:hover { background:#eff6ff; border-color:var(--accent-1); }
+.event-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+.event-info .event-title { font-size:13px; font-weight:600; }
+.event-info .event-meta { font-size:11.5px; color:var(--text-secondary); margin-top:2px; }
+.event-reminder { font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; margin-top:4px; display:inline-block; }
+.rem-h2 { background:#ffedd5; color:#9a3412; }
+.rem-h1 { background:#fee2e2; color:#991b1b; }
+
+.add-event-form { margin-top:16px; border-top:1px solid var(--border); padding-top:16px; }
+.form-group { margin-bottom:12px; }
+.form-group label { font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:5px; }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%; padding:9px 12px; border-radius:9px;
+  border:1.5px solid var(--border); background:#f8fafc;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px;
+  color:var(--text-primary); outline:none; transition:var(--transition);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color:var(--accent-1); background:#fff; box-shadow:0 0 0 3px rgba(46,125,186,0.1);
+}
+
+/* ===================== AED MONITORING ===================== */
+.aed-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px; margin-bottom:24px; }
+.aed-card {
+  background:var(--bg-card); border-radius:var(--radius);
+  padding:20px; box-shadow:var(--shadow-sm); border:1px solid var(--border);
+  transition:var(--transition); position:relative; overflow:hidden;
+}
+.aed-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); }
+.aed-status-bar {
+  height:4px; border-radius:4px; margin-bottom:16px;
+  background:linear-gradient(90deg,var(--accent-2),#6ee7b7);
+}
+.aed-status-bar.warn { background:linear-gradient(90deg,var(--accent-3),#fbbf24); }
+.aed-status-bar.danger { background:linear-gradient(90deg,var(--accent-5),#fca5a5); }
+.aed-name { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; margin-bottom:4px; }
+.aed-location { font-size:12px; color:var(--text-secondary); margin-bottom:14px; }
+.aed-detail { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+.aed-detail .lbl { color:var(--text-secondary); }
+.aed-detail .val { font-weight:600; }
+
+/* ===================== CHRONIC DISEASE ===================== */
+.chronic-summary {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px; margin-bottom:24px;
+}
+.chronic-card {
+  background:var(--bg-card); border-radius:var(--radius);
+  padding:18px 20px; box-shadow:var(--shadow-sm); border:1px solid var(--border);
+  text-align:center; transition:var(--transition);
+}
+.chronic-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); }
+.chronic-num { font-family:'Outfit',sans-serif; font-size:36px; font-weight:800; }
+.chronic-lbl { font-size:12.5px; color:var(--text-secondary); margin-top:4px; font-weight:500; }
+
+/* ===================== PROGRESS ===================== */
+.progress-list { display:flex; flex-direction:column; gap:14px; }
+.progress-item {
+  background:var(--bg-card); border-radius:var(--radius);
+  padding:18px 22px; box-shadow:var(--shadow-sm); border:1px solid var(--border);
+  transition:var(--transition);
+}
+.progress-item:hover { transform:translateX(4px); box-shadow:var(--shadow-md); }
+.progress-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.progress-title { font-size:14px; font-weight:700; }
+.progress-bar-wrap { background:#f1f5f9; border-radius:8px; height:8px; overflow:hidden; }
+.progress-bar-fill {
+  height:100%; border-radius:8px;
+  background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+  transition:width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+.progress-meta { display:flex; align-items:center; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--text-secondary); }
+
+/* ===================== 3D FLOATING BACKGROUND ===================== */
+.bg-orb {
+  position:fixed; border-radius:50%; pointer-events:none; z-index:0;
+  filter:blur(60px); opacity:0.06;
+  animation:float-orb 8s ease-in-out infinite;
+}
+.orb1 { width:400px; height:400px; background:var(--accent-1); top:-100px; right:10%; animation-delay:0s; }
+.orb2 { width:300px; height:300px; background:var(--accent-2); bottom:5%; left:20%; animation-delay:3s; }
+.orb3 { width:250px; height:250px; background:var(--accent-4); top:40%; right:5%; animation-delay:5s; }
+@keyframes float-orb {
+  0%,100% { transform:translateY(0) scale(1); }
+  50% { transform:translateY(-30px) scale(1.05); }
+}
+
+/* ===================== MODAL ===================== */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(26,39,68,0.5);
+  backdrop-filter:blur(6px); z-index:999;
+  display:none; align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; animation:fadeIn 0.25s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal-box {
+  background:#fff; border-radius:20px; padding:28px 30px;
+  width:min(520px,92vw); box-shadow:var(--shadow-lg);
+  animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+  max-height:85vh; overflow-y:auto;
+}
+@keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+.modal-head h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; }
+.modal-close { font-size:22px; cursor:pointer; color:var(--text-muted); line-height:1; padding:4px 8px; border-radius:6px; transition:var(--transition); }
+.modal-close:hover { background:#f1f5f9; color:var(--text-primary); }
+
+/* ===================== NOTIFICATION PANEL ===================== */
+.notif-panel {
+  position:fixed; top:70px; right:20px; width:320px;
+  background:#fff; border-radius:16px; box-shadow:var(--shadow-lg);
+  border:1px solid var(--border); z-index:500; display:none;
+}
+.notif-panel.open { display:block; animation:slideDown 0.25s ease; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+.notif-head { padding:16px 18px 12px; font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; border-bottom:1px solid var(--border); }
+.notif-item { padding:12px 18px; display:flex; gap:12px; border-bottom:1px solid rgba(0,0,0,0.04); transition:var(--transition); }
+.notif-item:hover { background:#f8fafc; }
+.notif-item:last-child { border-bottom:none; }
+.notif-ico { font-size:20px; flex-shrink:0; margin-top:2px; }
+.notif-text .ntitle { font-size:13px; font-weight:600; }
+.notif-text .nsub { font-size:11.5px; color:var(--text-secondary); margin-top:2px; }
+.notif-time { font-size:10.5px; color:var(--text-muted); margin-top:4px; }
+
+/* ===================== EXCEL IMPORT ===================== */
+.import-zone {
+  border:2px dashed var(--border); border-radius:14px;
+  padding:32px; text-align:center; cursor:pointer;
+  transition:var(--transition); background:#f8fafc;
+}
+.import-zone:hover { border-color:var(--accent-1); background:#eff6ff; }
+.import-zone .iz-icon { font-size:36px; margin-bottom:10px; }
+.import-zone p { font-size:13.5px; color:var(--text-secondary); }
+.import-zone strong { color:var(--accent-1); }
+
+/* ===================== RESPONSIF ===================== */
+@media(max-width:900px){
+  #sidebar { width:70px; }
+  #sidebar .logo-text, #sidebar .nav-item span:not(.nav-icon), #sidebar .sidebar-footer .user-info, #sidebar .nav-section-label { display:none; }
+  #sidebar .nav-item { justify-content:center; padding:13px; }
+  #main { margin-left:70px; }
+  .calendar-wrap { grid-template-columns:1fr; }
+}
+@media(max-width:600px){
+  .section-page { padding:16px 14px 32px; }
+  .topbar { padding:12px 16px; }
+  .chart-grid { grid-template-columns:1fr; }
+  .stat-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ===================== SCROLLBAR ===================== */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(44,100,176,0.2); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(44,100,176,0.4); }
+
+/* ===================== MISC ===================== */
+.flex-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.mt-4 { margin-top:16px; }
+.mb-4 { margin-bottom:16px; }
+.sub-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+</style>
+</head>
+<body>
+
+<!-- BG ORBS 3D Effect -->
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+
+<!-- ========== SIDEBAR ========== -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <div class="logo-icon">🏥</div>
+      <div class="logo-text">
+        <div class="logo-title">Wedabay Medical Center</div>
+        <div class="logo-sub">Occupational Health Unit</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Main Menu</div>
+    <div class="nav-item active" onclick="showSection('dashboard',this)">
+      <span class="nav-icon">📊</span><span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="showSection('health-talk',this)">
+      <span class="nav-icon">🗣️</span><span>Health Talk</span>
+    </div>
+    <div class="nav-item" onclick="showSection('hra',this)">
+      <span class="nav-icon">🔍</span><span>Health Risk Assessment</span>
+    </div>
+    <div class="nav-item" onclick="showSection('hygiene',this)">
+      <span class="nav-icon">🧹</span><span>Hygiene Inspeksi</span>
+    </div>
+    <div class="nav-item" onclick="showSection('laporan-kes',this)">
+      <span class="nav-icon">📋</span><span>Laporan Kesehatan Kerja</span>
+    </div>
+    <div class="nav-item" onclick="showSection('aed',this)">
+      <span class="nav-icon">⚡</span><span>Monitoring AED</span>
+    </div>
+    <div class="nav-item" onclick="showSection('chronic',this)">
+      <span class="nav-icon">💊</span><span>Chronic Diseases</span>
+    </div>
+    <div class="nav-item" onclick="showSection('progress',this)">
+      <span class="nav-icon">📁</span><span>Progress Report</span>
+    </div>
+    <div class="nav-item" onclick="showSection('kalender',this)">
+      <span class="nav-icon">📅</span><span>Jadwal Kegiatan</span><span class="nav-badge" id="nb-remind">0</span>
+    </div>
+    <div class="nav-section-label">Data</div>
+    <div class="nav-item" onclick="showSection('data-master',this)">
+      <span class="nav-icon">🗄️</span><span>Master Data & Import</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">OH</div>
+      <div class="user-info">
+        <div class="user-name">Admin OH Unit</div>
+        <div class="user-role">Occupational Health Officer</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ========== MAIN ========== -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="page-title" id="topbar-title">Dashboard Ringkasan</div>
+        <div class="page-sub" id="topbar-sub">Overview kesehatan kerja – Wedabay Medical Center</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="date-pill" id="date-pill"></div>
+      <div class="notif-btn" onclick="toggleNotif()" title="Notifikasi">
+        🔔<div class="notif-dot" id="notif-dot"></div>
+      </div>
+      <button class="topbar-btn btn-outline" onclick="showSection('data-master',document.querySelector('.nav-item:nth-last-child(1)'))">⬆ Import Excel</button>
+      <button class="topbar-btn btn-primary" onclick="exportReport()">⬇ Export PDF</button>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: DASHBOARD ========== -->
+  <div class="section-page active" id="sec-dashboard">
+    <div class="section-header">
+      <h2>📊 Dashboard Ringkasan</h2>
+      <p>Rekapitulasi seluruh program kesehatan kerja secara real-time</p>
+    </div>
+
+    <!-- Stat Cards Row 1 -->
+    <div class="stat-grid" id="summary-stats"></div>
+
+    <!-- Charts Row 1 -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Kunjungan Pelayanan Kesehatan Kerja</div>
+        <div class="chart-sub">Konsultasi Okupasi vs Konsultasi Umum (Bulanan)</div>
+        <canvas id="chartKunjungan"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Distribusi Kelaikan Kerja (RTW)</div>
+        <div class="chart-sub">Hasil evaluasi kelaikan kerja keseluruhan</div>
+        <canvas id="chartRTW"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Health Talk – Pelaksanaan per Kategori</div>
+        <div class="chart-sub">FAP Mining / FAP Industri / OH (Bulanan)</div>
+        <canvas id="chartHT"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Chronic Disease Monitoring</div>
+        <div class="chart-sub">Hadir Terkontrol / Tidak Terkontrol / Tidak Hadir</div>
+        <canvas id="chartChronic"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: HEALTH TALK ========== -->
+  <div class="section-page" id="sec-health-talk">
+    <div class="section-header">
+      <h2>🗣️ Health Talk</h2>
+      <p>Monitoring kegiatan Health Talk per kategori area</p>
+    </div>
+    <div class="stat-grid" id="ht-stats"></div>
+    <div class="chart-grid">
+      <div class="chart-card full">
+        <div class="chart-title">Trend Pelaksanaan Health Talk</div>
+        <div class="chart-sub">Perbandingan realisasi vs target per bulan</div>
+        <canvas id="chartHTDetail"></canvas>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Data Pelaksanaan Health Talk</h3>
+        <div class="table-actions">
+          <button class="tbl-btn" onclick="openModal('modal-ht-add')">+ Tambah Data</button>
+          <button class="tbl-btn" onclick="exportTableCSV('tbl-ht','HealthTalk')">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="tbl-ht">
+          <thead><tr><th>#</th><th>Tanggal</th><th>Topik</th><th>Kategori</th><th>Peserta</th><th>Lokasi</th><th>PIC</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-ht"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: HRA ========== -->
+  <div class="section-page" id="sec-hra">
+    <div class="section-header">
+      <h2>🔍 Health Risk Assessment (HRA)</h2>
+      <p>Monitoring pelaksanaan dan status HRA seluruh area</p>
+    </div>
+    <div class="stat-grid" id="hra-stats"></div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Status HRA</div>
+        <div class="chart-sub">Selesai vs Akan Dilakukan</div>
+        <canvas id="chartHRA"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">HRA per Area</div>
+        <div class="chart-sub">Distribusi per lokasi kerja</div>
+        <canvas id="chartHRAArea"></canvas>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Data HRA</h3>
+        <div class="table-actions">
+          <button class="tbl-btn" onclick="openModal('modal-hra-add')">+ Tambah Data</button>
+          <button class="tbl-btn" onclick="exportTableCSV('tbl-hra','HRA')">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="tbl-hra">
+          <thead><tr><th>#</th><th>Area</th><th>Nama Assessment</th><th>Tgl Rencana</th><th>Tgl Realisasi</th><th>Petugas</th><th>Risiko Dominan</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-hra"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: HYGIENE ========== -->
+  <div class="section-page" id="sec-hygiene">
+    <div class="section-header">
+      <h2>🧹 Hygiene Inspeksi Area</h2>
+      <p>Monitoring inspeksi higiene area Mining dan Industri</p>
+    </div>
+    <div class="stat-grid" id="hyg-stats"></div>
+    <div class="chart-grid">
+      <div class="chart-card full">
+        <div class="chart-title">Hasil Skor Higiene Inspeksi</div>
+        <div class="chart-sub">Skor per area per bulan (skala 0-100)</div>
+        <canvas id="chartHygiene"></canvas>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Data Higiene Inspeksi</h3>
+        <div class="table-actions">
+          <button class="tbl-btn" onclick="openModal('modal-hyg-add')">+ Tambah Data</button>
+          <button class="tbl-btn" onclick="exportTableCSV('tbl-hyg','Hygiene')">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="tbl-hyg">
+          <thead><tr><th>#</th><th>Tanggal</th><th>Area</th><th>Zona</th><th>Inspektor</th><th>Skor</th><th>Temuan</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-hyg"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: LAPORAN KESEHATAN KERJA ========== -->
+  <div class="section-page" id="sec-laporan-kes">
+    <div class="section-header">
+      <h2>📋 Laporan Kesehatan Kerja</h2>
+      <p>Kunjungan, Evaluasi Kelaikan Kerja, Pekerja Perempuan, Prolong Sickleave</p>
+    </div>
+
+    <div class="stat-grid" id="lk-stats"></div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Kunjungan Bulanan</div>
+        <div class="chart-sub">Konsultasi Okupasi & Umum</div>
+        <canvas id="chartKunjunganDetail"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">RTW – Kelaikan Kerja (Umum)</div>
+        <div class="chart-sub">5 kategori hasil evaluasi</div>
+        <canvas id="chartRTWDetail"></canvas>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">RTW – Pekerja Perempuan</div>
+        <div class="chart-sub">5 kategori hasil evaluasi pekerja perempuan</div>
+        <canvas id="chartRTWWomen"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Prolong Sickleave</div>
+        <div class="chart-sub">Jumlah kasus per bulan</div>
+        <canvas id="chartSickleave"></canvas>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Data Evaluasi Kelaikan Kerja (RTW)</h3>
+        <div class="table-actions">
+          <button class="tbl-btn" onclick="openModal('modal-rtw-add')">+ Tambah Data</button>
+          <button class="tbl-btn" onclick="exportTableCSV('tbl-rtw','RTW')">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="tbl-rtw">
+          <thead><tr><th>#</th><th>Tanggal</th><th>Nama Pekerja</th><th>NIK</th><th>Jenis Kelamin</th><th>Diagnosa</th><th>Jenis Evaluasi</th><th>Hasil RTW</th><th>Catatan</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-rtw"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: AED ========== -->
+  <div class="section-page" id="sec-aed">
+    <div class="section-header">
+      <h2>⚡ Monitoring Alat AED</h2>
+      <p>Status dan kondisi seluruh unit Automated External Defibrillator</p>
+    </div>
+    <div class="stat-grid" id="aed-summary"></div>
+    <div class="aed-grid" id="aed-cards"></div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Daftar Unit AED</h3>
+        <div class="table-actions">
+          <button class="tbl-btn" onclick="openModal('modal-aed-add')">+ Tambah AED</button>
+          <button class="tbl-btn" onclick="exportTableCSV('tbl-aed','AED')">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="tbl-aed">
+          <thead><tr><th>#</th><th>Unit ID</th><th>Lokasi</th><th>Merk/Model</th><th>Tgl Inspeksi</th><th>Baterai</th><th>Pad Expired</th><th>Kondisi</th><th>PIC</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-aed"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: CHRONIC ========== -->
+  <div class="section-page" id="sec-chronic">
+    <div class="section-header">
+      <h2>💊 Chronic Diseases Monitoring</h2>
+      <p>Monitoring peserta program penyakit kronis (Hipertensi, DM, dll.)</p>
+    </div>
+    <div class="chronic-summary" id="chronic-summary"></div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Kehadiran Peserta Chronic Disease</div>
+        <div class="chart-sub">Terkontrol / Tidak Terkontrol / Tidak Hadir</div>
+        <canvas id="chartChronicDetail"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Tren Kontrol Bulanan</div>
+        <div class="chart-sub">Persentase terkontrol per bulan</div>
+        <canvas id="chartChronicTrend"></canvas>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Data Peserta Chronic Disease</h3>
+        <div class="table-actions">
+          <button class="tbl-btn" onclick="openModal('modal-chronic-add')">+ Tambah Peserta</button>
+          <button class="tbl-btn" onclick="exportTableCSV('tbl-chronic','ChronicDisease')">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="tbl-chronic">
+          <thead><tr><th>#</th><th>Nama</th><th>NIK</th><th>Penyakit</th><th>Tgl Jadwal</th><th>Kehadiran</th><th>Status Kontrol</th><th>Tekanan Darah</th><th>GDS</th><th>Obat</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-chronic"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: PROGRESS REPORT ========== -->
+  <div class="section-page" id="sec-progress">
+    <div class="section-header">
+      <h2>📁 Progress Report</h2>
+      <p>Status laporan, dokumen, dan kegiatan yang sedang berjalan</p>
+    </div>
+    <div class="stat-grid" id="prog-stats"></div>
+    <div class="progress-list" id="progress-list"></div>
+    <div class="mt-4">
+      <button class="topbar-btn btn-primary" onclick="openModal('modal-prog-add')">+ Tambah Progress Item</button>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: KALENDER ========== -->
+  <div class="section-page" id="sec-kalender">
+    <div class="section-header">
+      <h2>📅 Jadwal Kegiatan Unit Kesehatan Kerja</h2>
+      <p>Kalender kegiatan dengan pengingat H-2 dan H-1</p>
+    </div>
+    <div class="calendar-wrap">
+      <div class="cal-card">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">◀</button>
+          <div class="cal-month-label" id="cal-month-label">—</div>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">▶</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div>
+        <div class="cal-card" style="margin-bottom:16px;">
+          <h3 style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;margin-bottom:14px;">➕ Tambah Jadwal</h3>
+          <div class="add-event-form">
+            <div class="form-group">
+              <label>Tanggal</label>
+              <input type="date" id="ev-date">
+            </div>
+            <div class="form-group">
+              <label>Nama Kegiatan</label>
+              <input type="text" id="ev-title" placeholder="Contoh: Health Talk FAP Mining">
+            </div>
+            <div class="form-group">
+              <label>Kategori</label>
+              <select id="ev-cat">
+                <option>Health Talk</option><option>HRA</option><option>Hygiene Inspeksi</option>
+                <option>Chronic Disease</option><option>AED Check</option><option>Rapat</option><option>Pelatihan</option><option>Lainnya</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Catatan</label>
+              <textarea id="ev-note" rows="2" placeholder="Keterangan tambahan..."></textarea>
+            </div>
+            <button class="topbar-btn btn-primary" style="width:100%" onclick="addEvent()">Simpan Jadwal</button>
+          </div>
+        </div>
+        <div class="cal-card">
+          <h3 style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;margin-bottom:14px;">🔔 Upcoming & Pengingat</h3>
+          <div class="events-list" id="events-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION: DATA MASTER ========== -->
+  <div class="section-page" id="sec-data-master">
+    <div class="section-header">
+      <h2>🗄️ Master Data & Sinkronisasi Excel</h2>
+      <p>Import data dari file Excel untuk memperbarui seluruh isi dashboard</p>
+    </div>
+    <div class="import-zone" onclick="document.getElementById('excel-input').click()">
+      <div class="iz-icon">📂</div>
+      <p><strong>Klik atau drag & drop file Excel</strong> (.xlsx / .xls)</p>
+      <p style="font-size:12px;margin-top:6px;">Format kolom harus sesuai template. <a href="#" onclick="downloadTemplate()" style="color:var(--accent-1)">Download Template</a></p>
+      <input type="file" id="excel-input" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)">
+    </div>
+    <div id="import-preview" style="margin-top:20px;display:none;">
+      <div class="table-card">
+        <div class="table-header"><h3 id="import-sheet-name">Preview Data</h3></div>
+        <div style="overflow-x:auto"><table id="tbl-import"><thead id="thead-import"></thead><tbody id="tbody-import"></tbody></table></div>
+      </div>
+      <button class="topbar-btn btn-primary mt-4" onclick="applyImport()">✅ Terapkan Data ke Dashboard</button>
+    </div>
+
+    <div style="margin-top:24px;">
+      <div class="chart-title" style="margin-bottom:12px;">📊 Template Kolom yang Digunakan</div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Sheet: HealthTalk</div>
+          <div class="chart-sub">Tanggal | Topik | Kategori | Peserta | Lokasi | PIC | Status</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Sheet: HRA</div>
+          <div class="chart-sub">Area | NamaAssessment | TglRencana | TglRealisasi | Petugas | RisikoDominan | Status</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Sheet: Hygiene</div>
+          <div class="chart-sub">Tanggal | Area | Zona | Inspektor | Skor | Temuan | Status</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Sheet: RTW</div>
+          <div class="chart-sub">Tanggal | NamaPekerja | NIK | JenisKelamin | Diagnosa | JenisEvaluasi | HasilRTW | Catatan</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Sheet: ChronicDisease</div>
+          <div class="chart-sub">Nama | NIK | Penyakit | TglJadwal | Kehadiran | StatusKontrol | TekananDarah | GDS | Obat</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Sheet: AED</div>
+          <div class="chart-sub">UnitID | Lokasi | Merk | TglInspeksi | Baterai | PadExpired | Kondisi | PIC | Status</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== NOTIFICATION PANEL ========== -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-head">🔔 Notifikasi & Pengingat</div>
+  <div id="notif-items"></div>
+</div>
+
+<!-- ========== MODALS ========== -->
+<!-- Modal: Health Talk Add -->
+<div class="modal-overlay" id="modal-ht-add">
+  <div class="modal-box">
+    <div class="modal-head"><h3>➕ Tambah Health Talk</h3><span class="modal-close" onclick="closeModal('modal-ht-add')">✕</span></div>
+    <div class="form-group"><label>Tanggal</label><input type="date" id="ht-date"></div>
+    <div class="form-group"><label>Topik</label><input type="text" id="ht-topic" placeholder="Topik Health Talk"></div>
+    <div class="form-group"><label>Kategori</label>
+      <select id="ht-cat"><option>FAP Mining</option><option>FAP Industri</option><option>OH</option></select></div>
+    <div class="form-group"><label>Jumlah Peserta</label><input type="number" id="ht-peserta" min="0"></div>
+    <div class="form-group"><label>Lokasi</label><input type="text" id="ht-lokasi" placeholder="Lokasi pelaksanaan"></div>
+    <div class="form-group"><label>PIC</label><input type="text" id="ht-pic" placeholder="Nama penanggung jawab"></div>
+    <div class="form-group"><label>Status</label>
+      <select id="ht-status"><option>Selesai</option><option>Berlangsung</option><option>Direncanakan</option></select></div>
+    <button class="topbar-btn btn-primary" style="width:100%;margin-top:8px" onclick="addHTRow()">Simpan</button>
+  </div>
+</div>
+
+<!-- Modal: HRA Add -->
+<div class="modal-overlay" id="modal-hra-add">
+  <div class="modal-box">
+    <div class="modal-head"><h3>➕ Tambah HRA</h3><span class="modal-close" onclick="closeModal('modal-hra-add')">✕</span></div>
+    <div class="form-group"><label>Area</label>
+      <select id="hra-area"><option>Mining</option><option>Industri</option><option>Office</option><option>Workshop</option></select></div>
+    <div class="form-group"><label>Nama Assessment</label><input type="text" id="hra-nama" placeholder="Nama assessment"></div>
+    <div class="form-group"><label>Tanggal Rencana</label><input type="date" id="hra-plan"></div>
+    <div class="form-group"><label>Tanggal Realisasi</label><input type="date" id="hra-real"></div>
+    <div class="form-group"><label>Petugas</label><input type="text" id="hra-ptg" placeholder="Nama petugas"></div>
+    <div class="form-group"><label>Risiko Dominan</label><input type="text" id="hra-risiko" placeholder="Kebisingan, Debu, dll."></div>
+    <div class="form-group"><label>Status</label>
+      <select id="hra-status"><option>Selesai</option><option>Akan Dilakukan</option><option>Berlangsung</option></select></div>
+    <button class="topbar-btn btn-primary" style="width:100%;margin-top:8px" onclick="addHRARow()">Simpan</button>
+  </div>
+</div>
+
+<!-- Modal: Hygiene Add -->
+<div class="modal-overlay" id="modal-hyg-add">
+  <div class="modal-box">
+    <div class="modal-head"><h3>➕ Tambah Inspeksi Higiene</h3><span class="modal-close" onclick="closeModal('modal-hyg-add')">✕</span></div>
+    <div class="form-group"><label>Tanggal</label><input type="date" id="hyg-date"></div>
+    <div class="form-group"><label>Area</label><select id="hyg-area"><option>Mining</option><option>Industri</option></select></div>
+    <div class="form-group"><label>Zona</label><input type="text" id="hyg-zona" placeholder="Zona / lokasi detail"></div>
+    <div class="form-group"><label>Inspektor</label><input type="text" id="hyg-inspektor" placeholder="Nama inspektor"></div>
+    <div class="form-group"><label>Skor (0-100)</label><input type="number" id="hyg-skor" min="0" max="100"></div>
+    <div class="form-group"><label>Temuan</label><textarea id="hyg-temuan" rows="2" placeholder="Temuan inspeksi"></textarea></div>
+    <div class="form-group"><label>Status</label><select id="hyg-status"><option>Selesai</option><option>Follow-up</option><option>Closed</option></select></div>
+    <button class="topbar-btn btn-primary" style="width:100%;margin-top:8px" onclick="addHygRow()">Simpan</button>
+  </div>
+</div>
+
+<!-- Modal: RTW Add -->
+<div class="modal-overlay" id="modal-rtw-add">
+  <div class="modal-box">
+    <div class="modal-head"><h3>➕ Tambah Evaluasi RTW</h3><span class="modal-close" onclick="closeModal('modal-rtw-add')">✕</span></div>
+    <div class="form-group"><label>Tanggal</label><input type="date" id="rtw-date"></div>
+    <div class="form-group"><label>Nama Pekerja</label><input type="text" id="rtw-nama" placeholder="Nama pekerja"></div>
+    <div class="form-group"><label>NIK</label><input type="text" id="rtw-nik" placeholder="Nomor Induk Karyawan"></div>
+    <div class="form-group"><label>Jenis Kelamin</label><select id="rtw-jk"><option>Laki-laki</option><option>Perempuan</option></select></div>
+    <div class="form-group"><label>Diagnosa</label><input type="text" id="rtw-diagnosa" placeholder="Diagnosa penyakit/kondisi"></div>
+    <div class="form-group"><label>Jenis Evaluasi</label><select id="rtw-jenis"><option>RTW Umum</option><option>RTW Pekerja Perempuan</option><option>Prolong Sickleave</option></select></div>
+    <div class="form-group"><label>Hasil RTW</label>
+      <select id="rtw-hasil">
+        <option>Laik Kerja</option>
+        <option>Laik Kerja dengan Catatan</option>
+        <option>Tidak Laik Kerja Sementara</option>
+        <option>Tidak Laik Kerja untuk Pekerjaan Semula</option>
+        <option>Tidak Laik Kerja untuk Semua Pekerjaan</option>
+      </select></div>
+    <div class="form-group"><label>Catatan</label><textarea id="rtw-catatan" rows="2"></textarea></div>
+    <button class="topbar-btn btn-primary" style="width:100%;margin-top:8px" onclick="addRTWRow()">Simpan</button>
+  </div>
+</div>
+
+<!-- Modal: AED Add -->
+<div class="modal-overlay" id="modal-aed-add">
+  <div class="modal-box">
+    <div class="modal-head"><h3>➕ Tambah Unit AED</h3><span class="modal-close" onclick="closeModal('modal-aed-add')">✕</span></div>
+    <div class="form-group"><label>Unit ID</label><input type="text" id="aed-id" placeholder="AED-001"></div>
+    <div class="form-group"><label>Lokasi</label><input type="text" id="aed-loc" placeholder="Lokasi penempatan AED"></div>
+    <div class="form-group"><label>Merk/Model</label><input type="text" id="aed-merk" placeholder="Philips HeartStart, dll."></div>
+    <div class="form-group"><label>Tanggal Inspeksi</label><input type="date" id="aed-date"></div>
+    <div class="form-group"><label>Baterai (%)</label><input type="number" id="aed-bat" min="0" max="100"></div>
+    <div class="form-group"><label>Pad Expired (Tgl)</label><input type="date" id="aed-pad"></div>
+    <div class="form-group"><label>Kondisi</label><select id="aed-kondisi"><option>Baik</option><option>Perlu Perhatian</option><option>Rusak</option></select></div>
+    <div class="form-group"><label>PIC</label><input type="text" id="aed-pic" placeholder="Nama PIC"></div>
+    <div class="form-group"><label>Status</label><select id="aed-status"><option>Aktif</option><option>Maintenance</option><option>Tidak Aktif</option></select></div>
+    <button class="topbar-btn btn-primary" style="width:100%;margin-top:8px" onclick="addAEDRow()">Simpan</button>
+  </div>
+</div>
+
+<!-- Modal: Chronic Add -->
+<div class="modal-overlay" id="modal-chronic-add">
+  <div class="modal-box">
+    <div class="modal-head"><h3>➕ Tambah Peserta Chronic</h3><span class="modal-close" onclick="closeModal('modal-chronic-add')">✕</span></div>
+    <div class="form-group"><label>Nama</label><input type="text" id="ch-nama" placeholder="Nama pekerja"></div>
+    <div class="form-group"><label>NIK</label><input type="text" id="ch-nik"></div>
+    <div class="form-group"><label>Penyakit</label><select id="ch-penyakit"><option>Hipertensi</option><option>Diabetes Mellitus</option><option>Asam Urat</option><option>Kolesterol</option><option>Obesitas</option></select></div>
+    <div class="form-group"><label>Tanggal Jadwal</label><input type="date" id="ch-date"></div>
+    <div class="form-group"><label>Kehadiran</label><select id="ch-hadir"><option>Hadir</option><option>Tidak Hadir</option></select></div>
+    <div class="form-group"><label>Status Kontrol</label><select id="ch-kontrol"><option>Terkontrol</option><option>Tidak Terkontrol</option></select></div>
+    <div class="form-group"><label>Tekanan Darah</label><input type="text" id="ch-td" placeholder="120/80"></div>
+    <div class="form-group"><label>GDS (mg/dL)</label><input type="number" id="ch-gds"></div>
+    <div class="form-group"><label>Obat</label><input type="text" id="ch-obat" placeholder="Nama obat"></div>
+    <button class="topbar-btn btn-primary" style="width:100%;margin-top:8px" onclick="addChronicRow()">Simpan</button>
+  </div>
+</div>
+
+<!-- Modal: Progress Add -->
+<div class="modal-overlay" id="modal-prog-add">
+  <div class="modal-box">
+    <div class="modal-head"><h3>➕ Tambah Progress Item</h3><span class="modal-close" onclick="closeModal('modal-prog-add')">✕</span></div>
+    <div class="form-group"><label>Judul Laporan/Kegiatan</label><input type="text" id="pg-title" placeholder="Nama laporan atau kegiatan"></div>
+    <div class="form-group"><label>Kategori</label><select id="pg-cat"><option>Laporan Bulanan</option><option>Dokumen SOP</option><option>Program Kerja</option><option>Pelatihan</option><option>Lainnya</option></select></div>
+    <div class="form-group"><label>PIC</label><input type="text" id="pg-pic" placeholder="Nama PIC"></div>
+    <div class="form-group"><label>Deadline</label><input type="date" id="pg-deadline"></div>
+    <div class="form-group"><label>Progress (%)</label><input type="range" id="pg-pct" min="0" max="100" value="50" oninput="document.getElementById('pg-pct-val').textContent=this.value+'%'"><span id="pg-pct-val">50%</span></div>
+    <div class="form-group"><label>Status</label><select id="pg-status"><option>Berlangsung</option><option>Selesai</option><option>Belum Mulai</option><option>Terlambat</option></select></div>
+    <div class="form-group"><label>Keterangan</label><textarea id="pg-ket" rows="2"></textarea></div>
+    <button class="topbar-btn btn-primary" style="width:100%;margin-top:8px" onclick="addProgressItem()">Simpan</button>
+  </div>
+</div>
+
+<script>
+// ===================== DATA STORE =====================
+const DATA = {
+  healthTalk: [
+    {date:'2025-01-10',topic:'Bahaya Kebisingan di Tambang',cat:'FAP Mining',peserta:48,lokasi:'Pit Area A',pic:'dr. Budi',status:'Selesai'},
+    {date:'2025-01-22',topic:'Higiene Industri & APD',cat:'FAP Industri',peserta:35,lokasi:'Pabrik Unit 2',pic:'Ns. Sari',status:'Selesai'},
+    {date:'2025-02-05',topic:'Ergonomi & Postur Kerja',cat:'OH',peserta:42,lokasi:'Office & Workshop',pic:'dr. Budi',status:'Selesai'},
+    {date:'2025-02-18',topic:'Pengelolaan Stres Kerja',cat:'FAP Mining',peserta:55,lokasi:'Camp Area',pic:'Ns. Dewi',status:'Selesai'},
+    {date:'2025-03-08',topic:'PHBS di Tempat Kerja',cat:'FAP Industri',peserta:38,lokasi:'Area Industri B',pic:'dr. Budi',status:'Selesai'},
+    {date:'2025-03-20',topic:'Paparan Kimia & Keselamatan',cat:'OH',peserta:29,lokasi:'Lab & Storage',pic:'Ns. Sari',status:'Selesai'},
+    {date:'2025-04-12',topic:'Kesehatan Reproduksi Pekerja',cat:'FAP Mining',peserta:31,lokasi:'Camp Mining',pic:'dr. Budi',status:'Berlangsung'},
+    {date:'2025-04-25',topic:'Tanggap Darurat Medis',cat:'FAP Industri',peserta:0,lokasi:'Area Industri A',pic:'Ns. Dewi',status:'Direncanakan'},
+  ],
+  hra: [
+    {area:'Mining',nama:'HRA Dust Exposure Pit A',tglPlan:'2025-01-15',tglReal:'2025-01-17',petugas:'dr. Budi',risiko:'Debu Silika',status:'Selesai'},
+    {area:'Mining',nama:'HRA Noise Level Blasting Zone',tglPlan:'2025-02-10',tglReal:'2025-02-12',petugas:'Ns. Sari',risiko:'Kebisingan',status:'Selesai'},
+    {area:'Industri',nama:'HRA Chemical Exposure Lab',tglPlan:'2025-02-20',tglReal:'2025-02-22',petugas:'dr. Budi',risiko:'Bahan Kimia',status:'Selesai'},
+    {area:'Industri',nama:'HRA Ergonomi Area Produksi',tglPlan:'2025-03-05',tglReal:'2025-03-07',petugas:'Ns. Dewi',risiko:'Ergonomi',status:'Selesai'},
+    {area:'Office',nama:'HRA Stres Kerja Office',tglPlan:'2025-03-25',tglReal:'',petugas:'Ns. Sari',risiko:'Psikososial',status:'Akan Dilakukan'},
+    {area:'Workshop',nama:'HRA Vibrasi Alat Berat',tglPlan:'2025-04-10',tglReal:'',petugas:'dr. Budi',risiko:'Getaran',status:'Akan Dilakukan'},
+  ],
+  hygiene: [
+    {date:'2025-01-20',area:'Mining',zona:'Zona Pit A',inspektor:'Tim Higiene',skor:82,temuan:'Toilet portable perlu dibersihkan',status:'Closed'},
+    {date:'2025-01-28',area:'Mining',zona:'Camp Area',inspektor:'Ns. Sari',skor:91,temuan:'Kondisi dapur umum baik',status:'Selesai'},
+    {date:'2025-02-15',area:'Industri',zona:'Area Produksi 1',inspektor:'dr. Budi',skor:75,temuan:'Ceceran minyak di lantai produksi',status:'Follow-up'},
+    {date:'2025-02-25',area:'Industri',zona:'Area Gudang',inspektor:'Tim Higiene',skor:88,temuan:'Pengelolaan limbah baik',status:'Selesai'},
+    {date:'2025-03-10',area:'Mining',zona:'Workshop Alat Berat',inspektor:'Ns. Dewi',skor:79,temuan:'Ventilasi kurang memadai',status:'Follow-up'},
+    {date:'2025-03-22',area:'Industri',zona:'Kantin & Wastafel',inspektor:'dr. Budi',skor:95,temuan:'Kondisi sangat baik',status:'Selesai'},
+  ],
+  rtw: [
+    {date:'2025-01-08',nama:'Ahmad Fauzi',nik:'WMC-001',jk:'Laki-laki',diagnosa:'LBP Kronis',jenis:'RTW Umum',hasil:'Laik Kerja dengan Catatan',catatan:'Hindari angkat berat'},
+    {date:'2025-01-15',nama:'Siti Rahayu',nik:'WMC-042',jk:'Perempuan',diagnosa:'Anemia',jenis:'RTW Pekerja Perempuan',hasil:'Laik Kerja',catatan:''},
+    {date:'2025-01-28',nama:'Budi Santoso',nik:'WMC-015',jk:'Laki-laki',diagnosa:'Fraktur Pergelangan',jenis:'RTW Umum',hasil:'Tidak Laik Kerja Sementara',catatan:'Rest 2 minggu'},
+    {date:'2025-02-05',nama:'Dewi Kusuma',nik:'WMC-078',jk:'Perempuan',diagnosa:'Hipertensi Berat',jenis:'RTW Pekerja Perempuan',hasil:'Tidak Laik Kerja Sementara',catatan:'Kontrol rutin'},
+    {date:'2025-02-18',nama:'Eko Prasetyo',nik:'WMC-033',jk:'Laki-laki',diagnosa:'TBC Paru',jenis:'Prolong Sickleave',hasil:'Tidak Laik Kerja untuk Pekerjaan Semula',catatan:'Program OAT 6 bulan'},
+    {date:'2025-03-05',nama:'Rina Wulandari',nik:'WMC-091',jk:'Perempuan',diagnosa:'Kehamilan Risiko',jenis:'RTW Pekerja Perempuan',hasil:'Laik Kerja dengan Catatan',catatan:'Tidak bertugas shift malam'},
+    {date:'2025-03-20',nama:'Hendra Gunawan',nik:'WMC-056',jk:'Laki-laki',diagnosa:'Hernia Diskus',jenis:'RTW Umum',hasil:'Tidak Laik Kerja untuk Pekerjaan Semula',catatan:'Mutasi pekerjaan ringan'},
+    {date:'2025-04-02',nama:'Yuni Kartika',nik:'WMC-112',jk:'Perempuan',diagnosa:'Post-op Appendix',jenis:'Prolong Sickleave',hasil:'Tidak Laik Kerja Sementara',catatan:'Pemulihan 3 minggu'},
+    {date:'2025-04-10',nama:'Agus Salim',nik:'WMC-024',jk:'Laki-laki',diagnosa:'Dermatitis Kontak',jenis:'RTW Umum',hasil:'Laik Kerja',catatan:'Gunakan sarung tangan kimia'},
+    {date:'2025-04-15',nama:'Citra Lestari',nik:'WMC-067',jk:'Perempuan',diagnosa:'Miom Uteri',jenis:'RTW Pekerja Perempuan',hasil:'Laik Kerja',catatan:''},
+  ],
+  aed: [
+    {id:'AED-001',lokasi:'Klinik Utama Wedabay',merk:'Philips HeartStart HS1',tglInspeksi:'2025-04-10',baterai:95,padExp:'2026-06-30',kondisi:'Baik',pic:'Ns. Sari',status:'Aktif'},
+    {id:'AED-002',lokasi:'Pit Area A – Control Room',merk:'Zoll AED Plus',tglInspeksi:'2025-04-10',baterai:82,padExp:'2025-09-15',kondisi:'Baik',pic:'Tim Safety',status:'Aktif'},
+    {id:'AED-003',lokasi:'Kantor Produksi Industri',merk:'Cardiac Science G5',tglInspeksi:'2025-04-10',baterai:68,padExp:'2026-01-20',kondisi:'Perlu Perhatian',pic:'dr. Budi',status:'Aktif'},
+    {id:'AED-004',lokasi:'Workshop Alat Berat',merk:'Philips HeartStart FRx',tglInspeksi:'2025-03-15',baterai:90,padExp:'2026-08-10',kondisi:'Baik',pic:'Tim K3',status:'Aktif'},
+    {id:'AED-005',lokasi:'Camp Area – Kantin',merk:'Zoll AED Plus',tglInspeksi:'2025-02-20',baterai:45,padExp:'2025-05-01',kondisi:'Perlu Perhatian',pic:'Ns. Dewi',status:'Maintenance'},
+    {id:'AED-006',lokasi:'Area Gudang Industri',merk:'Cardiac Science G5',tglInspeksi:'2025-04-12',baterai:88,padExp:'2026-11-30',kondisi:'Baik',pic:'Tim Safety',status:'Aktif'},
+  ],
+  chronic: [
+    {nama:'Suharno',nik:'WMC-007',penyakit:'Hipertensi',tglJadwal:'2025-04-14',hadir:'Hadir',kontrol:'Terkontrol',td:'130/85',gds:'-',obat:'Amlodipine 5mg'},
+    {nama:'Maryati',nik:'WMC-019',penyakit:'Diabetes Mellitus',tglJadwal:'2025-04-14',hadir:'Hadir',kontrol:'Tidak Terkontrol',td:'140/90',gds:250,obat:'Metformin 500mg'},
+    {nama:'Bambang W.',nik:'WMC-031',penyakit:'Hipertensi',tglJadwal:'2025-04-14',hadir:'Tidak Hadir',kontrol:'-',td:'-',gds:'-',obat:'Bisoprolol 5mg'},
+    {nama:'Sri Wahyuni',nik:'WMC-045',penyakit:'Kolesterol',tglJadwal:'2025-04-14',hadir:'Hadir',kontrol:'Terkontrol',td:'120/80',gds:'-',obat:'Simvastatin 20mg'},
+    {nama:'Teguh Priyono',nik:'WMC-058',penyakit:'Diabetes Mellitus',tglJadwal:'2025-04-14',hadir:'Hadir',kontrol:'Terkontrol',td:'125/82',gds:180,obat:'Glibenclamide 5mg'},
+    {nama:'Lilik Sulistyani',nik:'WMC-072',penyakit:'Asam Urat',tglJadwal:'2025-04-14',hadir:'Tidak Hadir',kontrol:'-',td:'-',gds:'-',obat:'Allopurinol 100mg'},
+    {nama:'Joko Widodo',nik:'WMC-083',penyakit:'Hipertensi',tglJadwal:'2025-04-14',hadir:'Hadir',kontrol:'Tidak Terkontrol',td:'160/100',gds:'-',obat:'Candesartan 8mg'},
+    {nama:'Nurul Hidayah',nik:'WMC-096',penyakit:'Obesitas',tglJadwal:'2025-04-14',hadir:'Hadir',kontrol:'Terkontrol',td:'118/78',gds:'-',obat:'-'},
+  ],
+  progress: [
+    {title:'Laporan Bulanan OH Maret 2025',cat:'Laporan Bulanan',pic:'dr. Budi',deadline:'2025-04-10',pct:100,status:'Selesai',ket:'Sudah dikirim ke manajemen'},
+    {title:'Program Kerja OH Q2 2025',cat:'Program Kerja',pic:'dr. Budi',deadline:'2025-04-30',pct:85,status:'Berlangsung',ket:'Dalam finalisasi'},
+    {title:'SOP Penanganan Kedaruratan Medis',cat:'Dokumen SOP',pic:'Ns. Sari',deadline:'2025-05-15',pct:60,status:'Berlangsung',ket:'Review internal belum selesai'},
+    {title:'Pelatihan P3K Batch 3',cat:'Pelatihan',pic:'Ns. Dewi',deadline:'2025-05-20',pct:30,status:'Berlangsung',ket:'Persiapan materi'},
+    {title:'Laporan HRA Kuartal 1 2025',cat:'Laporan Bulanan',pic:'dr. Budi',deadline:'2025-04-20',pct:100,status:'Selesai',ket:'Final'},
+    {title:'Revisi SOP Higiene Industri',cat:'Dokumen SOP',pic:'Ns. Sari',deadline:'2025-06-01',pct:10,status:'Belum Mulai',ket:'Menunggu data inspeksi'},
+  ],
+  events: [
+    {date:'2025-04-18',title:'Health Talk FAP Mining',cat:'Health Talk',note:'Topik: Kesehatan Reproduksi',color:'#2e7dba'},
+    {date:'2025-04-22',title:'HRA Stres Kerja Office',cat:'HRA',note:'Petugas: Ns. Sari',color:'#38b89a'},
+    {date:'2025-04-25',title:'Health Talk FAP Industri',cat:'Health Talk',note:'Topik: Tanggap Darurat',color:'#2e7dba'},
+    {date:'2025-04-28',title:'Hygiene Inspeksi Mining',cat:'Hygiene Inspeksi',note:'Zona: Pit A & Camp',color:'#8b6dd6'},
+    {date:'2025-05-05',title:'Chronic Disease Monitoring',cat:'Chronic Disease',note:'Jadwal bulanan peserta',color:'#e87a41'},
+    {date:'2025-05-10',title:'Pelatihan P3K Batch 3',cat:'Pelatihan',note:'Peserta: 25 orang',color:'#e84141'},
+  ]
+};
+
+// ===================== CALENDAR =====================
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DOW = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+function renderCalendar() {
+  const today = new Date();
+  const label = document.getElementById('cal-month-label');
+  label.textContent = MONTHS[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  DOW.forEach(d => { const e=document.createElement('div'); e.className='cal-dow'; e.textContent=d; grid.appendChild(e); });
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const days = new Date(calYear, calMonth+1, 0).getDate();
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day other-month';grid.appendChild(e);}
+  for(let d=1;d<=days;d++){
+    const el=document.createElement('div'); el.className='cal-day';
+    el.textContent=d;
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
+    if(isToday) el.classList.add('today');
+    const evs=DATA.events.filter(e=>e.date===dateStr);
+    if(evs.length) el.classList.add('has-event');
+    // Reminder check
+    DATA.events.forEach(ev=>{
+      const evDate=new Date(ev.date+'T00:00:00');
+      const dayDiff=Math.round((evDate-new Date(calYear,calMonth,d))/86400000);
+      if(dayDiff===2) el.classList.add('reminder2');
+      if(dayDiff===1) el.classList.add('reminder1');
+    });
+    el.onclick=()=>showDayEvents(dateStr);
+    grid.appendChild(el);
+  }
+  renderEventsList();
+}
+
+function changeMonth(dir) { calMonth+=dir; if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+function renderEventsList() {
+  const list = document.getElementById('events-list');
+  list.innerHTML='';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const sorted=[...DATA.events].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const upcoming=sorted.filter(e=>new Date(e.date+'T00:00:00')>=today).slice(0,8);
+  if(!upcoming.length){list.innerHTML='<div style="font-size:13px;color:var(--text-muted);padding:8px 0">Tidak ada jadwal mendatang</div>';return;}
+  upcoming.forEach(ev=>{
+    const evDate=new Date(ev.date+'T00:00:00');
+    const diff=Math.round((evDate-today)/86400000);
+    let remHtml='';
+    if(diff===2) remHtml=`<span class="event-reminder rem-h2">H-2</span>`;
+    else if(diff===1) remHtml=`<span class="event-reminder rem-h1">H-1</span>`;
+    else if(diff===0) remHtml=`<span class="event-reminder rem-h1" style="background:#fee2e2;color:#991b1b">Hari Ini!</span>`;
+    const el=document.createElement('div'); el.className='event-item';
+    el.innerHTML=`<div class="event-dot" style="background:${ev.color}"></div>
+      <div class="event-info">
+        <div class="event-title">${ev.title}</div>
+        <div class="event-meta">${ev.date} &middot; ${ev.cat}</div>
+        <div class="event-meta">${ev.note||''}</div>
+        ${remHtml}
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+function showDayEvents(dateStr) {
+  const evs=DATA.events.filter(e=>e.date===dateStr);
+  if(!evs.length) return;
+  alert('📅 Jadwal '+dateStr+':\n\n'+evs.map(e=>`• ${e.title} [${e.cat}]\n  ${e.note||''}`).join('\n\n'));
+}
+
+function addEvent() {
+  const date=document.getElementById('ev-date').value;
+  const title=document.getElementById('ev-title').value.trim();
+  const cat=document.getElementById('ev-cat').value;
+  const note=document.getElementById('ev-note').value.trim();
+  if(!date||!title){alert('Tanggal dan nama kegiatan wajib diisi!');return;}
+  const catColors={'Health Talk':'#2e7dba','HRA':'#38b89a','Hygiene Inspeksi':'#8b6dd6','Chronic Disease':'#e87a41','AED Check':'#e84141','Rapat':'#5c6f88','Pelatihan':'#22c55e','Lainnya':'#9aabbd'};
+  DATA.events.push({date,title,cat,note,color:catColors[cat]||'#9aabbd'});
+  renderCalendar();
+  document.getElementById('ev-date').value='';
+  document.getElementById('ev-title').value='';
+  document.getElementById('ev-note').value='';
+  updateNotifBadge();
+}
+
+// ===================== RENDER TABLES =====================
+function badgeStatus(s){
+  const m={'Selesai':'badge-green','Berlangsung':'badge-blue','Direncanakan':'badge-gray','Akan Dilakukan':'badge-yellow','Follow-up':'badge-orange','Closed':'badge-green','Aktif':'badge-green','Maintenance':'badge-yellow','Tidak Aktif':'badge-red','Terkontrol':'badge-green','Tidak Terkontrol':'badge-red','Hadir':'badge-green','Tidak Hadir':'badge-red','Terlambat':'badge-red','Belum Mulai':'badge-gray'};
+  return `<span class="badge ${m[s]||'badge-gray'}">${s}</span>`;
+}
+function rtwBadge(r){
+  const m={'Laik Kerja':'badge-green','Laik Kerja dengan Catatan':'badge-blue','Tidak Laik Kerja Sementara':'badge-yellow','Tidak Laik Kerja untuk Pekerjaan Semula':'badge-orange','Tidak Laik Kerja untuk Semua Pekerjaan':'badge-red'};
+  return `<span class="badge ${m[r]||'badge-gray'}" style="font-size:10px">${r}</span>`;
+}
+
+function renderHTTable(){
+  const tb=document.getElementById('tbody-ht'); tb.innerHTML='';
+  DATA.healthTalk.forEach((r,i)=>{
+    tb.innerHTML+=`<tr><td>${i+1}</td><td>${r.date}</td><td>${r.topic}</td><td><span class="badge badge-blue">${r.cat}</span></td><td>${r.peserta}</td><td>${r.lokasi}</td><td>${r.pic}</td><td>${badgeStatus(r.status)}</td><td><button class="tbl-btn" onclick="delRow('healthTalk',${i})">🗑</button></td></tr>`;
+  });
+}
+function renderHRATable(){
+  const tb=document.getElementById('tbody-hra'); tb.innerHTML='';
+  DATA.hra.forEach((r,i)=>{
+    tb.innerHTML+=`<tr><td>${i+1}</td><td>${r.area}</td><td>${r.nama}</td><td>${r.tglPlan}</td><td>${r.tglReal||'-'}</td><td>${r.petugas}</td><td>${r.risiko}</td><td>${badgeStatus(r.status)}</td><td><button class="tbl-btn" onclick="delRow('hra',${i})">🗑</button></td></tr>`;
+  });
+}
+function renderHygTable(){
+  const tb=document.getElementById('tbody-hyg'); tb.innerHTML='';
+  DATA.hygiene.forEach((r,i)=>{
+    const sc=r.skor>=85?'badge-green':r.skor>=70?'badge-yellow':'badge-red';
+    tb.innerHTML+=`<tr><td>${i+1}</td><td>${r.date}</td><td>${r.area}</td><td>${r.zona}</td><td>${r.inspektor}</td><td><span class="badge ${sc}">${r.skor}</span></td><td>${r.temuan}</td><td>${badgeStatus(r.status)}</td><td><button class="tbl-btn" onclick="delRow('hygiene',${i})">🗑</button></td></tr>`;
+  });
+}
+function renderRTWTable(){
+  const tb=document.getElementById('tbody-rtw'); tb.innerHTML='';
+  DATA.rtw.forEach((r,i)=>{
+    tb.innerHTML+=`<tr><td>${i+1}</td><td>${r.date}</td><td>${r.nama}</td><td>${r.nik}</td><td>${r.jk}</td><td>${r.diagnosa}</td><td><span class="badge badge-purple" style="font-size:10px">${r.jenis}</span></td><td>${rtwBadge(r.hasil)}</td><td>${r.catatan||'-'}</td><td><button class="tbl-btn" onclick="delRow('rtw',${i})">🗑</button></td></tr>`;
+  });
+}
+function renderAEDTable(){
+  const tb=document.getElementById('tbody-aed'); tb.innerHTML='';
+  DATA.aed.forEach((r,i)=>{
+    const bc=r.baterai>=70?'badge-green':r.baterai>=40?'badge-yellow':'badge-red';
+    tb.innerHTML+=`<tr><td>${i+1}</td><td>${r.id}</td><td>${r.lokasi}</td><td>${r.merk}</td><td>${r.tglInspeksi}</td><td><span class="badge ${bc}">${r.baterai}%</span></td><td>${r.padExp}</td><td>${r.kondisi}</td><td>${r.pic}</td><td>${badgeStatus(r.status)}</td><td><button class="tbl-btn" onclick="delRow('aed',${i})">🗑</button></td></tr>`;
+  });
+}
+function renderChronicTable(){
+  const tb=document.getElementById('tbody-chronic'); tb.innerHTML='';
+  DATA.chronic.forEach((r,i)=>{
+    tb.innerHTML+=`<tr><td>${i+1}</td><td>${r.nama}</td><td>${r.nik}</td><td>${r.penyakit}</td><td>${r.tglJadwal}</td><td>${badgeStatus(r.hadir)}</td><td>${r.kontrol==='Terkontrol'?badgeStatus(r.kontrol):r.kontrol==='-'?'<span class="badge badge-gray">-</span>':badgeStatus(r.kontrol)}</td><td>${r.td}</td><td>${r.gds||'-'}</td><td>${r.obat}</td><td><button class="tbl-btn" onclick="delRow('chronic',${i})">🗑</button></td></tr>`;
+  });
+}
+
+function delRow(key,idx){
+  if(!confirm('Hapus data ini?')) return;
+  DATA[key].splice(idx,1);
+  renderAll();
+  initCharts();
+}
+
+// ===================== ADD ROWS =====================
+function addHTRow(){
+  DATA.healthTalk.push({date:V('ht-date'),topic:V('ht-topic'),cat:V('ht-cat'),peserta:+V('ht-peserta'),lokasi:V('ht-lokasi'),pic:V('ht-pic'),status:V('ht-status')});
+  closeModal('modal-ht-add'); renderHTTable(); updateStatCards(); initCharts();
+}
+function addHRARow(){
+  DATA.hra.push({area:V('hra-area'),nama:V('hra-nama'),tglPlan:V('hra-plan'),tglReal:V('hra-real'),petugas:V('hra-ptg'),risiko:V('hra-risiko'),status:V('hra-status')});
+  closeModal('modal-hra-add'); renderHRATable(); updateStatCards(); initCharts();
+}
+function addHygRow(){
+  DATA.hygiene.push({date:V('hyg-date'),area:V('hyg-area'),zona:V('hyg-zona'),inspektor:V('hyg-inspektor'),skor:+V('hyg-skor'),temuan:V('hyg-temuan'),status:V('hyg-status')});
+  closeModal('modal-hyg-add'); renderHygTable(); updateStatCards(); initCharts();
+}
+function addRTWRow(){
+  DATA.rtw.push({date:V('rtw-date'),nama:V('rtw-nama'),nik:V('rtw-nik'),jk:V('rtw-jk'),diagnosa:V('rtw-diagnosa'),jenis:V('rtw-jenis'),hasil:V('rtw-hasil'),catatan:V('rtw-catatan')});
+  closeModal('modal-rtw-add'); renderRTWTable(); updateStatCards(); initCharts();
+}
+function addAEDRow(){
+  DATA.aed.push({id:V('aed-id'),lokasi:V('aed-loc'),merk:V('aed-merk'),tglInspeksi:V('aed-date'),baterai:+V('aed-bat'),padExp:V('aed-pad'),kondisi:V('aed-kondisi'),pic:V('aed-pic'),status:V('aed-status')});
+  closeModal('modal-aed-add'); renderAEDTable(); renderAEDCards(); updateStatCards();
+}
+function addChronicRow(){
+  DATA.chronic.push({nama:V('ch-nama'),nik:V('ch-nik'),penyakit:V('ch-penyakit'),tglJadwal:V('ch-date'),hadir:V('ch-hadir'),kontrol:V('ch-hadir')==='Hadir'?V('ch-kontrol'):'-',td:V('ch-td'),gds:V('ch-gds'),obat:V('ch-obat')});
+  closeModal('modal-chronic-add'); renderChronicTable(); renderChronicSummary(); initCharts();
+}
+function addProgressItem(){
+  DATA.progress.push({title:V('pg-title'),cat:V('pg-cat'),pic:V('pg-pic'),deadline:V('pg-deadline'),pct:+V('pg-pct'),status:V('pg-status'),ket:V('pg-ket')});
+  closeModal('modal-prog-add'); renderProgressList();
+}
+function V(id){return document.getElementById(id)?document.getElementById(id).value:'';}
+
+// ===================== AED CARDS =====================
+function renderAEDCards(){
+  const container=document.getElementById('aed-cards'); container.innerHTML='';
+  DATA.aed.forEach(r=>{
+    const cl=r.status==='Aktif'&&r.kondisi==='Baik'?'':'r.status==="Maintenance"||r.kondisi==="Perlu Perhatian"?"warn":"danger"';
+    const barCl=r.kondisi==='Baik'?'':'r.kondisi==="Perlu Perhatian"?"warn":"danger"';
+    const bc=r.baterai>=70?'#22c55e':r.baterai>=40?'#e87a41':'#e84141';
+    container.innerHTML+=`<div class="aed-card">
+      <div class="aed-status-bar ${r.kondisi==='Perlu Perhatian'?'warn':r.kondisi==='Rusak'?'danger':''}"></div>
+      <div class="aed-name">${r.id}</div>
+      <div class="aed-location">📍 ${r.lokasi}</div>
+      <div class="aed-detail"><span class="lbl">Merk/Model</span><span class="val">${r.merk}</span></div>
+      <div class="aed-detail"><span class="lbl">Baterai</span><span class="val" style="color:${bc}">${r.baterai}%</span></div>
+      <div class="aed-detail"><span class="lbl">Pad Expired</span><span class="val">${r.padExp}</span></div>
+      <div class="aed-detail"><span class="lbl">Tgl Inspeksi</span><span class="val">${r.tglInspeksi}</span></div>
+      <div class="aed-detail"><span class="lbl">PIC</span><span class="val">${r.pic}</span></div>
+      <div style="margin-top:10px">${badgeStatus(r.status)} ${r.kondisi!=='Baik'?`<span class="badge badge-orange">${r.kondisi}</span>`:''}</div>
+    </div>`;
+  });
+}
+
+// ===================== CHRONIC SUMMARY =====================
+function renderChronicSummary(){
+  const total=DATA.chronic.length;
+  const hadir=DATA.chronic.filter(r=>r.hadir==='Hadir').length;
+  const terkontrol=DATA.chronic.filter(r=>r.kontrol==='Terkontrol').length;
+  const tidakTerkontrol=DATA.chronic.filter(r=>r.kontrol==='Tidak Terkontrol').length;
+  const tidakHadir=DATA.chronic.filter(r=>r.hadir==='Tidak Hadir').length;
+  const c=document.getElementById('chronic-summary');
+  c.innerHTML=`
+    <div class="chronic-card"><div class="chronic-num" style="color:var(--accent-1)">${total}</div><div class="chronic-lbl">Total Peserta Terjadwal</div></div>
+    <div class="chronic-card"><div class="chronic-num" style="color:var(--accent-2)">${hadir}</div><div class="chronic-lbl">Total Hadir</div></div>
+    <div class="chronic-card"><div class="chronic-num" style="color:#22c55e">${terkontrol}</div><div class="chronic-lbl">Hadir – Terkontrol</div></div>
+    <div class="chronic-card"><div class="chronic-num" style="color:var(--accent-5)">${tidakTerkontrol}</div><div class="chronic-lbl">Hadir – Tidak Terkontrol</div></div>
+    <div class="chronic-card"><div class="chronic-num" style="color:var(--accent-3)">${tidakHadir}</div><div class="chronic-lbl">Tidak Hadir</div></div>`;
+}
+
+// ===================== PROGRESS LIST =====================
+function renderProgressList(){
+  const list=document.getElementById('progress-list'); list.innerHTML='';
+  const stColor={'Selesai':'#22c55e','Berlangsung':'var(--accent-1)','Belum Mulai':'var(--text-muted)','Terlambat':'var(--accent-5)'};
+  DATA.progress.forEach(p=>{
+    list.innerHTML+=`<div class="progress-item">
+      <div class="progress-top">
+        <div class="progress-title">${p.title}</div>
+        ${badgeStatus(p.status)}
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${p.pct}%;background:linear-gradient(90deg,${stColor[p.status]||'var(--accent-1)'},var(--accent-2))"></div></div>
+      <div class="progress-meta">
+        <span>🗂 ${p.cat} &middot; 👤 ${p.pic} &middot; 📌 ${p.ket}</span>
+        <span>⏰ ${p.deadline} &nbsp; <strong>${p.pct}%</strong></span>
+      </div>
+    </div>`;
+  });
+  // Progress stats
+  const done=DATA.progress.filter(p=>p.status==='Selesai').length;
+  const ongoing=DATA.progress.filter(p=>p.status==='Berlangsung').length;
+  document.getElementById('prog-stats').innerHTML=`
+    <div class="stat-card c1"><div class="stat-icon">📁</div><div class="stat-label">Total Laporan/Kegiatan</div><div class="stat-value">${DATA.progress.length}</div></div>
+    <div class="stat-card c2"><div class="stat-icon">✅</div><div class="stat-label">Selesai</div><div class="stat-value">${done}</div></div>
+    <div class="stat-card c3"><div class="stat-icon">🔄</div><div class="stat-label">Berlangsung</div><div class="stat-value">${ongoing}</div></div>
+    <div class="stat-card c4"><div class="stat-icon">📊</div><div class="stat-label">Rata-rata Progress</div><div class="stat-value">${Math.round(DATA.progress.reduce((a,p)=>a+p.pct,0)/DATA.progress.length)}%</div></div>`;
+}
+
+// ===================== STAT CARDS =====================
+function updateStatCards(){
+  // Dashboard summary
+  const htDone=DATA.healthTalk.filter(r=>r.status==='Selesai').length;
+  const htTotal=DATA.healthTalk.length;
+  const hraDone=DATA.hra.filter(r=>r.status==='Selesai').length;
+  const hraWill=DATA.hra.filter(r=>r.status==='Akan Dilakukan').length;
+  const hygTotal=DATA.hygiene.length;
+  const aedActive=DATA.aed.filter(r=>r.status==='Aktif').length;
+  const chronic=DATA.chronic.length;
+  const rtw=DATA.rtw.length;
+  document.getElementById('summary-stats').innerHTML=`
+    <div class="stat-card c1"><div class="stat-icon">🗣️</div><div class="stat-label">Health Talk Terlaksana</div><div class="stat-value">${htDone}</div><div class="stat-sub">dari ${htTotal} total</div></div>
+    <div class="stat-card c2"><div class="stat-icon">🔍</div><div class="stat-label">HRA Selesai</div><div class="stat-value">${hraDone}</div><div class="stat-sub">${hraWill} akan dilakukan</div></div>
+    <div class="stat-card c3"><div class="stat-icon">🧹</div><div class="stat-label">Hygiene Inspeksi</div><div class="stat-value">${hygTotal}</div><div class="stat-sub">mining & industri</div></div>
+    <div class="stat-card c4"><div class="stat-icon">⚡</div><div class="stat-label">AED Aktif</div><div class="stat-value">${aedActive}</div><div class="stat-sub">dari ${DATA.aed.length} unit</div></div>
+    <div class="stat-card c5"><div class="stat-icon">💊</div><div class="stat-label">Peserta Chronic</div><div class="stat-value">${chronic}</div><div class="stat-sub">terjadwal bulan ini</div></div>
+    <div class="stat-card c1"><div class="stat-icon">📋</div><div class="stat-label">Evaluasi RTW</div><div class="stat-value">${rtw}</div><div class="stat-sub">total kasus</div></div>`;
+
+  // HT stats
+  const htM=DATA.healthTalk.filter(r=>r.cat==='FAP Mining').length;
+  const htI=DATA.healthTalk.filter(r=>r.cat==='FAP Industri').length;
+  const htO=DATA.healthTalk.filter(r=>r.cat==='OH').length;
+  document.getElementById('ht-stats').innerHTML=`
+    <div class="stat-card c1"><div class="stat-icon">⛏️</div><div class="stat-label">Health Talk FAP Mining</div><div class="stat-value">${htM}</div></div>
+    <div class="stat-card c2"><div class="stat-icon">🏭</div><div class="stat-label">Health Talk FAP Industri</div><div class="stat-value">${htI}</div></div>
+    <div class="stat-card c4"><div class="stat-icon">🏥</div><div class="stat-label">Health Talk OH</div><div class="stat-value">${htO}</div></div>
+    <div class="stat-card c3"><div class="stat-icon">👥</div><div class="stat-label">Total Peserta</div><div class="stat-value">${DATA.healthTalk.reduce((a,r)=>a+r.peserta,0)}</div></div>`;
+
+  // HRA stats
+  document.getElementById('hra-stats').innerHTML=`
+    <div class="stat-card c1"><div class="stat-icon">📋</div><div class="stat-label">Total HRA</div><div class="stat-value">${DATA.hra.length}</div></div>
+    <div class="stat-card c2"><div class="stat-icon">✅</div><div class="stat-label">Selesai</div><div class="stat-value">${hraDone}</div></div>
+    <div class="stat-card c3"><div class="stat-icon">🔜</div><div class="stat-label">Akan Dilakukan</div><div class="stat-value">${hraWill}</div></div>
+    <div class="stat-card c4"><div class="stat-icon">⛏️</div><div class="stat-label">Area Mining</div><div class="stat-value">${DATA.hra.filter(r=>r.area==='Mining').length}</div></div>`;
+
+  // Hygiene stats
+  const avgSkor=Math.round(DATA.hygiene.reduce((a,r)=>a+r.skor,0)/DATA.hygiene.length);
+  document.getElementById('hyg-stats').innerHTML=`
+    <div class="stat-card c1"><div class="stat-icon">🧹</div><div class="stat-label">Total Inspeksi</div><div class="stat-value">${DATA.hygiene.length}</div></div>
+    <div class="stat-card c2"><div class="stat-icon">⛏️</div><div class="stat-label">Mining</div><div class="stat-value">${DATA.hygiene.filter(r=>r.area==='Mining').length}</div></div>
+    <div class="stat-card c3"><div class="stat-icon">🏭</div><div class="stat-label">Industri</div><div class="stat-value">${DATA.hygiene.filter(r=>r.area==='Industri').length}</div></div>
+    <div class="stat-card c4"><div class="stat-icon">⭐</div><div class="stat-label">Rata-rata Skor</div><div class="stat-value">${avgSkor}</div></div>`;
+
+  // LK stats
+  const occ=rtw; const gen=Math.round(rtw*0.4);
+  document.getElementById('lk-stats').innerHTML=`
+    <div class="stat-card c1"><div class="stat-icon">🏥</div><div class="stat-label">Total Kunjungan</div><div class="stat-value">${occ+gen+12}</div></div>
+    <div class="stat-card c2"><div class="stat-icon">⚕️</div><div class="stat-label">Konsultasi Okupasi</div><div class="stat-value">${occ}</div></div>
+    <div class="stat-card c3"><div class="stat-icon">👨‍⚕️</div><div class="stat-label">Konsultasi Umum</div><div class="stat-value">${gen+12}</div></div>
+    <div class="stat-card c4"><div class="stat-icon">♀️</div><div class="stat-label">RTW Pekerja Perempuan</div><div class="stat-value">${DATA.rtw.filter(r=>r.jk==='Perempuan').length}</div></div>
+    <div class="stat-card c5"><div class="stat-icon">🤒</div><div class="stat-label">Prolong Sickleave</div><div class="stat-value">${DATA.rtw.filter(r=>r.jenis==='Prolong Sickleave').length}</div></div>`;
+
+  // AED summary
+  const aedWarn=DATA.aed.filter(r=>r.kondisi==='Perlu Perhatian').length;
+  const aedLowBat=DATA.aed.filter(r=>r.baterai<50).length;
+  document.getElementById('aed-summary').innerHTML=`
+    <div class="stat-card c2"><div class="stat-icon">⚡</div><div class="stat-label">AED Aktif</div><div class="stat-value">${aedActive}</div></div>
+    <div class="stat-card c3"><div class="stat-icon">⚠️</div><div class="stat-label">Perlu Perhatian</div><div class="stat-value">${aedWarn}</div></div>
+    <div class="stat-card c5"><div class="stat-icon">🔋</div><div class="stat-label">Baterai Rendah (<50%)</div><div class="stat-value">${aedLowBat}</div></div>
+    <div class="stat-card c1"><div class="stat-icon">🔧</div><div class="stat-label">Maintenance</div><div class="stat-value">${DATA.aed.filter(r=>r.status==='Maintenance').length}</div></div>`;
+}
+
+// ===================== CHARTS =====================
+const MONTHS_SHORT=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+const chartInstances={};
+
+function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}}
+
+function mkChart(id,config){
+  destroyChart(id);
+  const ctx=document.getElementById(id);
+  if(!ctx) return;
+  chartInstances[id]=new Chart(ctx,config);
+}
+
+function initCharts(){
+  // Dashboard: Kunjungan
+  mkChart('chartKunjungan',{type:'bar',data:{labels:MONTHS_SHORT.slice(0,4),datasets:[
+    {label:'Konsultasi Okupasi',data:[22,18,25,20],backgroundColor:'rgba(46,125,186,0.8)',borderRadius:6},
+    {label:'Konsultasi Umum',data:[15,12,18,14],backgroundColor:'rgba(56,184,154,0.7)',borderRadius:6}
+  ]},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // Dashboard: RTW
+  const rtwLabels=['Laik Kerja','Laik dg Catatan','TLK Sementara','TLK Pekerjaan Semula','TLK Semua'];
+  const rtwVals=[
+    DATA.rtw.filter(r=>r.hasil==='Laik Kerja').length,
+    DATA.rtw.filter(r=>r.hasil==='Laik Kerja dengan Catatan').length,
+    DATA.rtw.filter(r=>r.hasil==='Tidak Laik Kerja Sementara').length,
+    DATA.rtw.filter(r=>r.hasil==='Tidak Laik Kerja untuk Pekerjaan Semula').length,
+    DATA.rtw.filter(r=>r.hasil==='Tidak Laik Kerja untuk Semua Pekerjaan').length,
+  ];
+  mkChart('chartRTW',{type:'doughnut',data:{labels:rtwLabels,datasets:[{data:rtwVals,backgroundColor:['#22c55e','#3b82f6','#f59e0b','#e87a41','#e84141'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+
+  // Dashboard: Health Talk Bar
+  const htByMonth=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const htM=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const htI=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const htO=[0,0,0,0,0,0,0,0,0,0,0,0];
+  DATA.healthTalk.forEach(r=>{const m=new Date(r.date).getMonth();htByMonth[m]++;if(r.cat==='FAP Mining')htM[m]++;if(r.cat==='FAP Industri')htI[m]++;if(r.cat==='OH')htO[m]++;});
+  mkChart('chartHT',{type:'bar',data:{labels:MONTHS_SHORT,datasets:[
+    {label:'FAP Mining',data:htM,backgroundColor:'rgba(46,125,186,0.8)',borderRadius:5},
+    {label:'FAP Industri',data:htI,backgroundColor:'rgba(56,184,154,0.7)',borderRadius:5},
+    {label:'OH',data:htO,backgroundColor:'rgba(139,109,214,0.7)',borderRadius:5}
+  ]},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // Dashboard: Chronic
+  const chHadir=DATA.chronic.filter(r=>r.hadir==='Hadir').length;
+  const chTerkontrol=DATA.chronic.filter(r=>r.kontrol==='Terkontrol').length;
+  const chTidakKontrol=DATA.chronic.filter(r=>r.kontrol==='Tidak Terkontrol').length;
+  const chTidakHadir=DATA.chronic.filter(r=>r.hadir==='Tidak Hadir').length;
+  mkChart('chartChronic',{type:'pie',data:{labels:['Hadir & Terkontrol','Hadir & Tidak Terkontrol','Tidak Hadir'],datasets:[{data:[chTerkontrol,chTidakKontrol,chTidakHadir],backgroundColor:['#22c55e','#e84141','#f59e0b'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
+
+  // Health Talk Detail
+  mkChart('chartHTDetail',{type:'line',data:{labels:MONTHS_SHORT,datasets:[
+    {label:'FAP Mining',data:htM,borderColor:'#2e7dba',backgroundColor:'rgba(46,125,186,0.1)',tension:0.4,fill:true,pointRadius:4},
+    {label:'FAP Industri',data:htI,borderColor:'#38b89a',backgroundColor:'rgba(56,184,154,0.08)',tension:0.4,fill:true,pointRadius:4},
+    {label:'OH',data:htO,borderColor:'#8b6dd6',backgroundColor:'rgba(139,109,214,0.08)',tension:0.4,fill:true,pointRadius:4},
+    {label:'Target',data:[1,1,1,1,1,1,1,1,1,1,1,1].map(()=>2),borderColor:'#e84141',borderDash:[5,5],pointRadius:0,tension:0}
+  ]},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // HRA charts
+  const hraDone=DATA.hra.filter(r=>r.status==='Selesai').length;
+  const hraWill=DATA.hra.filter(r=>r.status==='Akan Dilakukan').length;
+  const hraOng=DATA.hra.filter(r=>r.status==='Berlangsung').length;
+  mkChart('chartHRA',{type:'doughnut',data:{labels:['Selesai','Akan Dilakukan','Berlangsung'],datasets:[{data:[hraDone,hraWill,hraOng],backgroundColor:['#22c55e','#f59e0b','#3b82f6'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+  const hraArea={'Mining':0,'Industri':0,'Office':0,'Workshop':0};
+  DATA.hra.forEach(r=>{if(hraArea[r.area]!==undefined)hraArea[r.area]++;});
+  mkChart('chartHRAArea',{type:'bar',data:{labels:Object.keys(hraArea),datasets:[{label:'Jumlah HRA',data:Object.values(hraArea),backgroundColor:['rgba(46,125,186,0.8)','rgba(56,184,154,0.8)','rgba(139,109,214,0.8)','rgba(232,122,65,0.8)'],borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // Hygiene
+  const hygLabels=DATA.hygiene.map(r=>r.zona.substring(0,16));
+  const hygScores=DATA.hygiene.map(r=>r.skor);
+  const hygColors=hygScores.map(s=>s>=85?'rgba(34,197,94,0.8)':s>=70?'rgba(245,158,11,0.8)':'rgba(232,65,65,0.8)');
+  mkChart('chartHygiene',{type:'bar',data:{labels:hygLabels,datasets:[{label:'Skor Higiene',data:hygScores,backgroundColor:hygColors,borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{min:0,max:100,grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // Laporan Kesehatan: Kunjungan
+  mkChart('chartKunjunganDetail',{type:'bar',data:{labels:MONTHS_SHORT.slice(0,4),datasets:[
+    {label:'Konsultasi Okupasi',data:[22,18,25,20],backgroundColor:'rgba(46,125,186,0.85)',borderRadius:6},
+    {label:'Konsultasi Umum',data:[15,12,18,14],backgroundColor:'rgba(56,184,154,0.75)',borderRadius:6}
+  ]},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // RTW Detail (all)
+  mkChart('chartRTWDetail',{type:'doughnut',data:{labels:rtwLabels,datasets:[{data:rtwVals,backgroundColor:['#22c55e','#3b82f6','#f59e0b','#e87a41','#e84141'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+
+  // RTW Women
+  const rtwW=DATA.rtw.filter(r=>r.jk==='Perempuan');
+  const rtwWVals=[
+    rtwW.filter(r=>r.hasil==='Laik Kerja').length,
+    rtwW.filter(r=>r.hasil==='Laik Kerja dengan Catatan').length,
+    rtwW.filter(r=>r.hasil==='Tidak Laik Kerja Sementara').length,
+    rtwW.filter(r=>r.hasil==='Tidak Laik Kerja untuk Pekerjaan Semula').length,
+    rtwW.filter(r=>r.hasil==='Tidak Laik Kerja untuk Semua Pekerjaan').length,
+  ];
+  mkChart('chartRTWWomen',{type:'doughnut',data:{labels:rtwLabels,datasets:[{data:rtwWVals,backgroundColor:['#22c55e','#3b82f6','#f59e0b','#e87a41','#e84141'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+
+  // Prolong Sickleave
+  mkChart('chartSickleave',{type:'bar',data:{labels:MONTHS_SHORT.slice(0,4),datasets:[{label:'Prolong Sickleave',data:[1,2,1,2],backgroundColor:'rgba(232,122,65,0.8)',borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}});
+
+  // Chronic Detail
+  mkChart('chartChronicDetail',{type:'doughnut',data:{labels:['Hadir & Terkontrol','Hadir & Tidak Terkontrol','Tidak Hadir'],datasets:[{data:[chTerkontrol,chTidakKontrol,chTidakHadir],backgroundColor:['#22c55e','#e84141','#f59e0b'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
+
+  // Chronic Trend
+  mkChart('chartChronicTrend',{type:'line',data:{labels:MONTHS_SHORT.slice(0,4),datasets:[{label:'% Terkontrol',data:[62,68,73,75],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,0.1)',tension:0.4,fill:true,pointRadius:5}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{min:0,max:100,grid:{color:'rgba(0,0,0,0.05)'}}}}});
+}
+
+// ===================== NOTIFICATIONS =====================
+function buildNotifications(){
+  const items=[];
+  const today=new Date(); today.setHours(0,0,0,0);
+  DATA.events.forEach(ev=>{
+    const d=new Date(ev.date+'T00:00:00');
+    const diff=Math.round((d-today)/86400000);
+    if(diff===1) items.push({ico:'⚠️',title:`H-1: ${ev.title}`,sub:'Besok! '+ev.note,color:'#fee2e2'});
+    if(diff===2) items.push({ico:'📌',title:`H-2: ${ev.title}`,sub:'Lusa. '+ev.note,color:'#fff3e0'});
+  });
+  DATA.aed.forEach(r=>{if(r.baterai<50) items.push({ico:'🔋',title:`Baterai AED Rendah: ${r.id}`,sub:`${r.lokasi} – ${r.baterai}%`,color:'#fee2e2'});});
+  DATA.aed.forEach(r=>{
+    const exp=new Date(r.padExp);
+    const diff=Math.round((exp-today)/86400000);
+    if(diff<90) items.push({ico:'⚡',title:`Pad AED Segera Expired: ${r.id}`,sub:`Expired: ${r.padExp}`,color:'#ffedd5'});
+  });
+  const nb=document.getElementById('notif-items');
+  nb.innerHTML='';
+  if(!items.length){nb.innerHTML='<div class="notif-item"><div class="notif-ico">✅</div><div class="notif-text"><div class="ntitle">Tidak ada notifikasi mendesak</div></div></div>';return;}
+  items.forEach(n=>{
+    nb.innerHTML+=`<div class="notif-item" style="background:${n.color}">
+      <div class="notif-ico">${n.ico}</div>
+      <div class="notif-text"><div class="ntitle">${n.title}</div><div class="nsub">${n.sub}</div></div>
+    </div>`;
+  });
+  document.getElementById('nb-remind').textContent=items.length;
+  document.getElementById('notif-dot').style.display=items.length?'block':'none';
+}
+
+function updateNotifBadge(){buildNotifications();}
+function toggleNotif(){const p=document.getElementById('notif-panel');p.classList.toggle('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.notif-btn')&&!e.target.closest('#notif-panel'))document.getElementById('notif-panel').classList.remove('open');});
+
+// ===================== NAVIGATION =====================
+const pageTitles={
+  'dashboard':['Dashboard Ringkasan','Overview kesehatan kerja – Wedabay Medical Center'],
+  'health-talk':['Health Talk','Monitoring pelaksanaan kegiatan Health Talk'],
+  'hra':['Health Risk Assessment','Monitoring HRA seluruh area'],
+  'hygiene':['Hygiene Inspeksi','Monitoring inspeksi higiene area Mining & Industri'],
+  'laporan-kes':['Laporan Kesehatan Kerja','Kunjungan, RTW, Pekerja Perempuan, Prolong Sickleave'],
+  'aed':['Monitoring AED','Status dan kondisi unit Automated External Defibrillator'],
+  'chronic':['Chronic Diseases Monitoring','Monitoring peserta program penyakit kronis'],
+  'progress':['Progress Report','Status laporan dan kegiatan berlangsung'],
+  'kalender':['Jadwal Kegiatan','Kalender dengan pengingat H-2 dan H-1'],
+  'data-master':['Master Data & Import Excel','Sinkronisasi data dari file Excel']
+};
+
+function showSection(id, el){
+  document.querySelectorAll('.section-page').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const t=pageTitles[id]||['',''];
+  document.getElementById('topbar-title').textContent=t[0];
+  document.getElementById('topbar-sub').textContent=t[1];
+}
+
+// ===================== MODAL =====================
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+
+// ===================== DATE PILL =====================
+function updateDate(){
+  const d=new Date();
+  const opts={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  document.getElementById('date-pill').textContent=d.toLocaleDateString('id-ID',opts);
+}
+
+// ===================== EXPORT =====================
+function exportTableCSV(tableId, name){
+  const t=document.getElementById(tableId);
+  if(!t){alert('Tabel tidak ditemukan');return;}
+  let csv='';
+  const rows=t.querySelectorAll('tr');
+  rows.forEach(r=>{
+    const cells=r.querySelectorAll('th,td');
+    const row=[...cells].map(c=>'"'+(c.innerText||c.textContent).replace(/"/g,'""')+'"');
+    csv+=row.join(',')+'\n';
+  });
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function exportReport(){
+  alert('Fitur export PDF memerlukan library tambahan (seperti jsPDF).\nSilakan gunakan Ctrl+P / Print to PDF dari browser untuk saat ini.');
+}
+
+// ===================== EXCEL IMPORT =====================
+let importedData = null;
+function importExcel(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary'});
+      importedData=wb;
+      const sn=wb.SheetNames[0];
+      const ws=wb.Sheets[sn];
+      const json=XLSX.utils.sheet_to_json(ws,{header:1});
+      document.getElementById('import-sheet-name').textContent='Preview: '+sn+' ('+json.length+' baris)';
+      const head=document.getElementById('thead-import'); head.innerHTML='';
+      const body=document.getElementById('tbody-import'); body.innerHTML='';
+      if(json.length>0){
+        const tr=document.createElement('tr');
+        json[0].forEach(h=>{const th=document.createElement('th');th.textContent=h;tr.appendChild(th);});
+        head.appendChild(tr);
+        json.slice(1,21).forEach(row=>{
+          const tr=document.createElement('tr');
+          row.forEach(cell=>{const td=document.createElement('td');td.textContent=cell;tr.appendChild(td);});
+          body.appendChild(tr);
+        });
+      }
+      document.getElementById('import-preview').style.display='block';
+    }catch(err){alert('Gagal membaca file Excel: '+err.message);}
+  };
+  reader.readAsBinaryString(file);
+}
+
+function applyImport(){
+  if(!importedData){alert('Tidak ada data untuk diterapkan.');return;}
+  const sheetMap={
+    'HealthTalk':'healthTalk','HRA':'hra','Hygiene':'hygiene',
+    'RTW':'rtw','ChronicDisease':'chronic','AED':'aed'
+  };
+  let applied=[];
+  importedData.SheetNames.forEach(sn=>{
+    const key=sheetMap[sn];
+    if(!key) return;
+    const ws=importedData.Sheets[sn];
+    const json=XLSX.utils.sheet_to_json(ws);
+    if(json.length>0){
+      DATA[key]=[...json];
+      applied.push(sn);
+    }
+  });
+  if(applied.length){
+    renderAll(); initCharts();
+    alert('✅ Data berhasil diterapkan dari sheet: '+applied.join(', '));
+  } else {
+    alert('⚠️ Tidak ada sheet yang cocok. Gunakan nama sheet: HealthTalk, HRA, Hygiene, RTW, ChronicDisease, AED');
+  }
+}
+
+function downloadTemplate(){
+  const wb=XLSX.utils.book_new();
+  const sheets={
+    'HealthTalk':[['Tanggal','Topik','Kategori','Peserta','Lokasi','PIC','Status'],['2025-01-10','Bahaya Kebisingan','FAP Mining',48,'Pit A','dr. Budi','Selesai']],
+    'HRA':[['Area','NamaAssessment','TglRencana','TglRealisasi','Petugas','RisikoDominan','Status'],['Mining','HRA Debu','2025-01-15','2025-01-17','dr. Budi','Debu Silika','Selesai']],
+    'Hygiene':[['Tanggal','Area','Zona','Inspektor','Skor','Temuan','Status'],['2025-01-20','Mining','Pit A','Tim K3',82,'Toilet kotor','Closed']],
+    'RTW':[['Tanggal','NamaPekerja','NIK','JenisKelamin','Diagnosa','JenisEvaluasi','HasilRTW','Catatan'],['2025-01-08','Ahmad','WMC-001','Laki-laki','LBP','RTW Umum','Laik Kerja','']],
+    'ChronicDisease':[['Nama','NIK','Penyakit','TglJadwal','Kehadiran','StatusKontrol','TekananDarah','GDS','Obat'],['Suharno','WMC-007','Hipertensi','2025-04-14','Hadir','Terkontrol','130/85','-','Amlodipine']],
+    'AED':[['UnitID','Lokasi','Merk','TglInspeksi','Baterai','PadExpired','Kondisi','PIC','Status'],['AED-001','Klinik Utama','Philips HS1','2025-04-10',95,'2026-06-30','Baik','Ns. Sari','Aktif']]
+  };
+  Object.entries(sheets).forEach(([sn,data])=>{
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb,ws,sn);
+  });
+  XLSX.writeFile(wb,'Template_OH_Dashboard.xlsx');
+}
+
+// ===================== RENDER ALL =====================
+function renderAll(){
+  renderHTTable(); renderHRATable(); renderHygTable();
+  renderRTWTable(); renderAEDTable(); renderChronicTable();
+  renderAEDCards(); renderChronicSummary(); renderProgressList();
+  updateStatCards();
+}
+
+// ===================== INIT =====================
+window.addEventListener('load',()=>{
+  updateDate();
+  renderAll();
+  initCharts();
+  renderCalendar();
+  buildNotifications();
+  // Animate stat values
+  setTimeout(()=>{
+    document.querySelectorAll('.stat-value').forEach(el=>{
+      const final=parseInt(el.textContent);
+      if(!isNaN(final)){
+        let cur=0;const step=Math.max(1,Math.round(final/30));
+        const timer=setInterval(()=>{cur=Math.min(cur+step,final);el.textContent=cur;if(cur>=final)clearInterval(timer);},30);
+      }
+    });
+  },300);
+});
+</script>
+</body>
+</html>
